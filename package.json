@@ -1,0 +1,23 @@
+{
+  "name": "allex__telegram_trendingservice",
+  "version": "0.1.0",
+  "description": "TrendingService",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@gitlab.hers.rs:allex_telegram_services/trending"
+  },
+  "keywords": [
+    "ecosystem:allex",
+    "Service",
+    "Trending"
+  ],
+  "author": "HERS Belgrade",
+  "license": "ISC",
+  "dependencies": {
+    "feedme": "^0.3.2"
+  }
+}
