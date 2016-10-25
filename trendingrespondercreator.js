@@ -12,6 +12,7 @@ function createTrendingResponder (execlib){
   function TrendingResponder(res, req){
     this.defaultMessage = 'I am not smart right now...';
     this.items = [];
+    this.state = null;
     TelegramResponder.call(this,res,req); //must call at the end because process is called in parent constructor
   }
 
@@ -19,6 +20,8 @@ function createTrendingResponder (execlib){
 
   TrendingResponder.prototype.destroy = function(){
     this.defaultMessage = null;
+    this.items = null;
+    this.state = null;
     TelegramResponder.prototype.destroy.call(this);
   }
 
@@ -46,7 +49,7 @@ function createTrendingResponder (execlib){
   };
 
   TrendingResponder.prototype.processItem = function (item) {
-    return new InlineQueryResultArticle(item);
+    return new InlineQueryResultArticle(item,null,true);
   };
 
   TrendingResponder.prototype.onTrendsFetched = function () {
@@ -71,20 +74,36 @@ function createTrendingResponder (execlib){
     */
   };
 
+  TrendingResponder.prototype.sendMessage = function(text,replyFlag){
+    var prophash = {
+      chat_id : this.incomingRequest.chat.id,
+      text : text
+    };
+    if (!!replyFlag){
+      prophash.reply_to_message_id = this.incomingRequest.message_id;
+    }
+    this.callMethod('sendMessage',new ReplyMessage(prophash));
+  };
+
+  TrendingResponder.prototype.processMessage = function(){
+    //google
+    if (this.incomingRequest.text.indexOf('google') !== -1){
+      this.sendMessage('Yooo');
+      return;
+    }
+    this.sendMessage(this.defaultMessage,true);
+  };
+
   TrendingResponder.prototype.processInlineQuery = function(){
     this.googleTrendingFeedToJson();
   };
 
   TrendingResponder.prototype.process = function(){
     //AI
-    console.log('Hej hej?',this.incomingRequest.constructor.name);
+    console.log('Hej hej?',this.incomingRequest);
     switch (this.incomingRequest.constructor.name){
       case 'Message':
-        this.callMethod('sendMessage',new ReplyMessage({
-          chat_id : this.incomingRequest.chat.id,
-          text : this.defaultMessage,
-          reply_to_message_id : this.incomingRequest.message_id
-        }));
+        this.processMessage();
         break;
       case 'InlineQuery':
         this.processInlineQuery();

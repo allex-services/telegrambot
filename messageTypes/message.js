@@ -4,6 +4,8 @@ function createMessage(execlib){
   var User = require('./user.js')(execlib);
 
   function Message(jsonreq){
+    //TODO consolelog za entities...
+    //console.log('STA SI',require('util').inspect(jsonreq,{depth:5}));
     this.update_id = jsonreq.update_id;
     this.message_id = jsonreq.message.message_id;
     this.date = jsonreq.message.date;

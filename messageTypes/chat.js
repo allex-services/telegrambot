@@ -5,7 +5,7 @@ function createChat(execlib){
     this.first_name = chatobj.first_name;
     this.last_name = chatobj.last_name;
     this.username = chatobj.username;
-    this.private = chatobj.private;
+    this.private = chatobj.type;
   }
   Chat.prototype.destroy = function(){
     this.private = null;

@@ -2,6 +2,9 @@ function createInlineQueryResultArticle(execlib){
 
   var lib = execlib.lib;
   var InputMessageContent = require('./inputMessageContent.js')(execlib);
+  var map = {
+    "gt":">" /* , … */
+  };
 
   function InlineQueryResultArticle(item,reply_markup,hide_url,thumb_width,thumb_height){
     this.type = 'article';
@@ -11,8 +14,8 @@ function createInlineQueryResultArticle(execlib){
     if (!!hide_url) this.hide_url = hide_url;
     if (!!item['ht:news_item'] && !!item['ht:news_item'][0]){
       if (!!item['ht:news_item'][0]['ht:news_item_url']) this.url = item['ht:news_item'][0]['ht:news_item_url'];
-      if (!!item['ht:news_item'][0]['ht:news_item_title']) this.input_message_content = new InputMessageContent(item['ht:news_item'][0]['ht:news_item_title'] + '\n' + this.url,'HTML');
-      if (!!item['ht:news_item'][0]['ht:news_item_snippet']) this.description = item['ht:news_item'][0]['ht:news_item_snippet'];
+      if (!!item['ht:news_item'][0]['ht:news_item_snippet']) this.description = this.removeHTMLTags(item['ht:news_item'][0]['ht:news_item_title']);
+      if (!!item['ht:news_item'][0]['ht:news_item_title']) this.input_message_content = new InputMessageContent(item['ht:news_item'][0]['ht:news_item_snippet'] + '\n' + this.url,'HTML');
     }
     if (!!item['ht:picture']) this.thumb_url = 'https:'+item['ht:picture'];
     if (!!thumb_width) this.thumb_width = thumb_width;
@@ -34,6 +37,23 @@ function createInlineQueryResultArticle(execlib){
     if (!!this.thumb_width) this.thumb_width = null;
     if (!!this.thumb_height) this.thumb_height = null;
   };
+
+  InlineQueryResultArticle.prototype.HTMLAsciiToPlain = function(text){
+    return text.replace(/&(#(?:x[0-9a-f]+|\d+)|[a-z]+);?/gi, function($0, $1) {
+        if ($1[0] === "#") {
+            return String.fromCharCode($1[1].toLowerCase() === "x" ? parseInt($1.substr(2), 16)  : parseInt($1.substr(1), 10));
+        } else {
+            return map.hasOwnProperty($1) ? map[$1] : $0;
+        }
+    });
+    //return text.replace(/&#(\d+);/g, function (m, n) { return String.fromCharCode(n); });
+  };
+
+  InlineQueryResultArticle.prototype.removeHTMLTags = function(htmlText){
+    var ret = this.HTMLAsciiToPlain(htmlText.replace(/<(?:.|\n)*?>/gm, ''));
+    return ret; 
+  };
+
   return InlineQueryResultArticle;
 }
 
