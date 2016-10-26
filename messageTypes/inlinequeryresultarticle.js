@@ -14,8 +14,8 @@ function createInlineQueryResultArticle(execlib){
     if (!!hide_url) this.hide_url = hide_url;
     if (!!item['ht:news_item'] && !!item['ht:news_item'][0]){
       if (!!item['ht:news_item'][0]['ht:news_item_url']) this.url = item['ht:news_item'][0]['ht:news_item_url'];
-      if (!!item['ht:news_item'][0]['ht:news_item_snippet']) this.description = this.removeHTMLTags(item['ht:news_item'][0]['ht:news_item_title']);
-      if (!!item['ht:news_item'][0]['ht:news_item_title']) this.input_message_content = new InputMessageContent(item['ht:news_item'][0]['ht:news_item_snippet'] + '\n' + this.url,'HTML');
+      if (!!item['ht:news_item'][0]['ht:news_item_title']) this.description = item['ht:approx_traffic'] + '\n' + this.removeHTMLTags(item['ht:news_item'][0]['ht:news_item_title']);
+      if (!!item['ht:news_item'][0]['ht:news_item_snippet']) this.input_message_content = new InputMessageContent(item['ht:news_item'][0]['ht:news_item_snippet'] + '\n' + this.url || '' ,'HTML');
     }
     if (!!item['ht:picture']) this.thumb_url = 'https:'+item['ht:picture'];
     if (!!thumb_width) this.thumb_width = thumb_width;
