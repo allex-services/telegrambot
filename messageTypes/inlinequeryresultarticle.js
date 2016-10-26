@@ -3,7 +3,7 @@ function createInlineQueryResultArticle(execlib){
   var lib = execlib.lib;
   var InputMessageContent = require('./inputMessageContent.js')(execlib);
   var map = {
-    "gt":">" /* , … */
+    "gt":">", "lt":"<", "apos":"'", "amp":"&", "quot":"\"", "nbsp":"  ",
   };
 
   function InlineQueryResultArticle(item,reply_markup,hide_url,thumb_width,thumb_height){
