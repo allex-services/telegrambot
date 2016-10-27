@@ -9,15 +9,19 @@ function createTrendingResponder (execlib){
   var lib = execlib.lib;
   var MessageTypes = require('./messageTypes/messagetypes.js')(execlib);
   var ReplyMessage = MessageTypes.ReplyMessage;
+  var ReplyInlineQuery = MessageTypes.ReplyInlineQuery;
   var InlineQueryResultArticle = MessageTypes.InlineQueryResultArticle;
+  var InlineKeyboardButton = MessageTypes.InlineKeyboardButton;
+  var InlineKeyboardMarkup = MessageTypes.InlineKeyboardMarkup;
+  var EmojiFlag = require('emoji-flag');
   var EmojiFlagToCountryCode = require('emoji-flag/to-country-code');
 
   var countryCodes = {
     'AR' : 1,
     'ar' : 1,
-    'AT' : 2,
+    'AU' : 2,
     'austra' : 2,
-    'AU' : 3,
+    'AT' : 3,
     'austri' : 3,
     'BE' : 4,
     'be' : 4,
@@ -121,52 +125,52 @@ function createTrendingResponder (execlib){
 
   var googleTrendsCountryCodes = [
     {code : '', country: 'Global'},                     // 0. Global
-    {code : 'p30', country: 'Argentina'},               // 1. Argentina 
-    {code : 'p8',  country: 'Australia'},               // 2. Australia
-    {code : 'p44',  country: 'Austria'},                // 3. Austria
-    {code : 'p41', country: 'Belgium'},                 // 4. Belgium
-    {code : 'p18', country: 'Brazil'},                  // 5. Brazil
-    {code : 'p13', country: 'Canada'},                  // 6. Canada
-    {code : 'p38', country: 'Chile'},                   // 7. Chile
-    {code : 'p32', country: 'Colombia'},                // 8. Colombia
-    {code : 'p43', country: 'Czech Republic'},          // 9. Czech Republic
-    {code : 'p49', country: 'Denmark'},                 // 10. Denmark
-    {code : 'p29', country: 'Egypt'},                   // 11. Egypt
-    {code : 'p50', country: 'Finland'},                 // 12. Finland
-    {code : 'p16', country: 'France'},                  // 13. France
-    {code : 'p15', country: 'Germany'},                 // 14. Germany
-    {code : 'p48', country: 'Greece'},                  // 15. Greece
-    {code : 'p10', country: 'Hong Kong'},               // 16. Hong Kong
-    {code : 'p45', country: 'Hungary'},                 // 17. Hungary
-    {code : 'p3', country: 'India'},                    // 18. India
-    {code : 'p19', country: 'Indonesia'},               // 19. Indonesia
-    {code : 'p6', country: 'Israel'},                   // 20. Israel
-    {code : 'p27', country: 'Italy'},                   // 21. Italy
-    {code : 'p4', country: 'Japan'},                    // 22. Japan
-    {code : 'p37', country: 'Kenya'},                   // 23. Kenya
-    {code : 'p34', country: 'Malaysia'},                // 24. Malaysia
-    {code : 'p21', country: 'Mexico'},                  // 25. Mexico
-    {code : 'p17', country: 'Netherlands'},             // 26. Netherlands
-    {code : 'p52', country: 'Nigeria'},                 // 27. Nigeria
-    {code : 'p51', country: 'Norway'},                  // 28. Norway
-    {code : 'p25', country: 'Phillippines'},            // 29. Phillippines
-    {code : 'p31', country: 'Poland'},                  // 30. Poland
-    {code : 'p47', country: 'Portugal'},                // 31. Portugal
-    {code : 'p39', country: 'Romania'},                 // 32. Romania
-    {code : 'p14', country: 'Russia'},                  // 33. Russia
-    {code : 'p36', country: 'Saudia Arabia'},           // 34. Saudia Arabia
-    {code : 'p5', country: 'Singapore'},                // 35. Singapore
-    {code : 'p40', country: 'South Africa'},            // 36. South Africa
-    {code : 'p26', country: 'Spain'},                   // 37. Spain
-    {code : 'p42', country: 'Sweden'},                  // 38. Sweden
-    {code : 'p46', country: 'Switzerland'},             // 39. Switzerland
-    {code : 'p12', country: 'Taiwan'},                  // 40. Taiwan
-    {code : 'p33', country: 'Thailand'},                // 41. Thailand
-    {code : 'p24', country: 'Turkey'},                  // 42. Turkey
-    {code : 'p35', country: 'Ukraine'},                 // 43. Ukraine
-    {code : 'p9', country: 'United Kingdom'},           // 44. United Kingdom
-    {code : 'p1', country: 'United States'},            // 45. United States
-    {code : 'p28', country: 'Vietnam'}                  // 46. Vietnam
+    {code : 'p30', country: 'Argentina', countryCode: 'AR'},               // 1. Argentina 
+    {code : 'p8',  country: 'Australia', countryCode: 'AU'},               // 2. Australia
+    {code : 'p44',  country: 'Austria', countryCode: 'AT'},                // 3. Austria
+    {code : 'p41', country: 'Belgium', countryCode: 'BE'},                 // 4. Belgium
+    {code : 'p18', country: 'Brazil', countryCode: 'BR'},                  // 5. Brazil
+    {code : 'p13', country: 'Canada', countryCode: 'CA'},                  // 6. Canada
+    {code : 'p38', country: 'Chile', countryCode: 'CL'},                   // 7. Chile
+    {code : 'p32', country: 'Colombia', countryCode: 'CO'},                // 8. Colombia
+    {code : 'p43', country: 'Czech Republic', countryCode: 'CZ'},          // 9. Czech Republic
+    {code : 'p49', country: 'Denmark', countryCode: 'DE'},                 // 10. Denmark
+    {code : 'p29', country: 'Egypt', countryCode: 'EG'},                   // 11. Egypt
+    {code : 'p50', country: 'Finland', countryCode: 'FI'},                 // 12. Finland
+    {code : 'p16', country: 'France', countryCode: 'FR'},                  // 13. France
+    {code : 'p15', country: 'Germany', countryCode: 'DE'},                 // 14. Germany
+    {code : 'p48', country: 'Greece', countryCode: 'GR'},                  // 15. Greece
+    {code : 'p10', country: 'Hong Kong', countryCode: 'HK'},               // 16. Hong Kong
+    {code : 'p45', country: 'Hungary', countryCode: 'HU'},                 // 17. Hungary
+    {code : 'p3', country: 'India', countryCode: 'IN'},                    // 18. India
+    {code : 'p19', country: 'Indonesia', countryCode: 'ID'},               // 19. Indonesia
+    {code : 'p6', country: 'Israel', countryCode: 'IL'},                   // 20. Israel
+    {code : 'p27', country: 'Italy', countryCode: 'IT'},                   // 21. Italy
+    {code : 'p4', country: 'Japan', countryCode: 'JP'},                    // 22. Japan
+    {code : 'p37', country: 'Kenya', countryCode: 'KE'},                   // 23. Kenya
+    {code : 'p34', country: 'Malaysia', countryCode: 'MY'},                // 24. Malaysia
+    {code : 'p21', country: 'Mexico', countryCode: 'MX'},                  // 25. Mexico
+    {code : 'p17', country: 'Netherlands', countryCode: 'NL'},             // 26. Netherlands
+    {code : 'p52', country: 'Nigeria', countryCode: 'NG'},                 // 27. Nigeria
+    {code : 'p51', country: 'Norway', countryCode: 'NO'},                  // 28. Norway
+    {code : 'p25', country: 'Phillippines', countryCode: 'PH'},            // 29. Phillippines
+    {code : 'p31', country: 'Poland', countryCode: 'PL'},                  // 30. Poland
+    {code : 'p47', country: 'Portugal', countryCode: 'PT'},                // 31. Portugal
+    {code : 'p39', country: 'Romania', countryCode: 'RO'},                 // 32. Romania
+    {code : 'p14', country: 'Russia', countryCode: 'RU'},                  // 33. Russia
+    {code : 'p36', country: 'Saudia Arabia', countryCode: 'SA'},           // 34. Saudia Arabia
+    {code : 'p5', country: 'Singapore', countryCode: 'SG'},                // 35. Singapore
+    {code : 'p40', country: 'South Africa', countryCode: 'ZA'},            // 36. South Africa
+    {code : 'p26', country: 'Spain', countryCode: 'ES'},                   // 37. Spain
+    {code : 'p42', country: 'Sweden', countryCode: 'SE'},                  // 38. Sweden
+    {code : 'p46', country: 'Switzerland', countryCode: 'CH'},             // 39. Switzerland
+    {code : 'p12', country: 'Taiwan', countryCode: 'TW'},                  // 40. Taiwan
+    {code : 'p33', country: 'Thailand', countryCode: 'TH'},                // 41. Thailand
+    {code : 'p24', country: 'Turkey', countryCode: 'TR'},                  // 42. Turkey
+    {code : 'p35', country: 'Ukraine', countryCode: 'UA', disabled: true},                 // 43. Ukraine
+    {code : 'p9', country: 'United Kingdom', countryCode: 'GB'},           // 44. United Kingdom
+    {code : 'p1', country: 'United States', countryCode: 'US'},            // 45. United States
+    {code : 'p28', country: 'Vietnam', countryCode: 'VN'}                  // 46. Vietnam
   ];
 
   function getCountryObj(lcc){
@@ -207,8 +211,41 @@ function createTrendingResponder (execlib){
     this.vimeoTrendsURL = null;
     this.items = null;
     TelegramResponder.prototype.destroy.call(this);
-    console.log('---- UBIO SAM SE ----');
+    //console.log('---- UBIO SAM SE ----');
   }
+
+  TrendingResponder.prototype.createSupportedCountriesMessage = function(){
+    var ret = 'Currently supported countries:\n\n';
+    for (var i=1; i<googleTrendsCountryCodes.length; i++){
+      if (!googleTrendsCountryCodes[i].disabled){
+        ret += EmojiFlag(googleTrendsCountryCodes[i].countryCode) + ' ' + googleTrendsCountryCodes[i].country + '\n\n';
+      }
+    }
+    return ret;
+  };
+
+  TrendingResponder.prototype.createSupportedCountriesInlineKeyboard = function(){
+    var ikm = new InlineKeyboardMarkup(15);
+    for (var i=1; i<googleTrendsCountryCodes.length; i++){
+      if (!googleTrendsCountryCodes[i].disabled){
+        ikm.addButton(new InlineKeyboardButton({
+          text: EmojiFlag(googleTrendsCountryCodes[i].countryCode) + ' ' + googleTrendsCountryCodes[i].country,
+          callback_data: 'SUPPORTED|' + googleTrendsCountryCodes[i].country
+          //switch_inline_query: googleTrendsCountryCodes[i].country
+        }));
+      }
+    }
+    return ikm.telegramType();
+  };
+
+  TrendingResponder.prototype.createSelectedCountryInlineKeyboard = function(country){
+    var ikm = new InlineKeyboardMarkup(1);
+    ikm.addButton(new InlineKeyboardButton({
+      text: 'Share trending topics in ' + country + ' with friends',
+      switch_inline_query: country
+    }));
+    return ikm.telegramType();
+  };
 
   TrendingResponder.prototype.googleTrendingFeedToJson = function(countryObj){
     var code = (!countryObj ? null : countryObj.code);
@@ -241,16 +278,18 @@ function createTrendingResponder (execlib){
   };
 
   TrendingResponder.prototype.requestFinisher = function(res){
-    console.log('answerInlineQuery says',res);
+    console.log('OPERATION DONE',res);
     this.destroy();
   };
 
   TrendingResponder.prototype.onTrendsFetched = function () {
-    this.callMethod('answerInlineQuery',{
+    this.callMethod('answerInlineQuery',new ReplyInlineQuery({
       inline_query_id : this.incomingRequest.id,
       results : JSON.stringify(this.items),
-      cache_time: 60 
-    });
+      cache_time: 60,
+      switch_pm_text: 'Check all supported countries',
+      switch_pm_parameter: 'supported'
+    }));
     /*
     var params = {
       inline_query_id : this.incomingRequest.id,
@@ -267,52 +306,83 @@ function createTrendingResponder (execlib){
     */
   };
 
-  TrendingResponder.prototype.sendMessage = function(text,replyFlag){
+  TrendingResponder.prototype.sendMessage = function(text,chat_id,replyFlag,replyMarkup){
     var prophash = {
-      chat_id : this.incomingRequest.chat.id,
+      chat_id : chat_id,
       text : text
     };
     if (!!replyFlag){
       prophash.reply_to_message_id = this.incomingRequest.message_id;
     }
+    if (!!replyMarkup){
+      prophash.reply_markup = replyMarkup;
+    }
     this.callMethod('sendMessage',new ReplyMessage(prophash));
+    /*
+    var params = new ReplyMessage(prophash);
+    lib.request('https://api.telegram.org/bot260656864:AAEERH7CqNskjOT1f1VbNT0PLJ61QEYoBTE/sendMessage',{
+      parameters: params,
+      method: 'POST',
+      onComplete: this.requestFinisher.bind(this),
+      onError:  console.error.bind(console, 'sendMessage fails')
+    });
+    */
   };
 
   TrendingResponder.prototype.commandRecieved = function(commandName){
-    return this.incomingRequest.commands.indexOf(commandName) !== -1;
-  }
+    var command = null;
+    for (var i=0; i<this.incomingRequest.commands.length; i++){
+      if (this.incomingRequest.commands[i].name === commandName){
+        command = this.incomingRequest.commands[i];
+        break;
+      }
+    }
+    return command;
+  };
 
   TrendingResponder.prototype.hashtagRecieved = function(hashtagName){
     return this.incomingRequest.hashtags.indexOf(hashtagName) !== -1;
-  }
+  };
+
+  TrendingResponder.prototype.start = function(param1){
+    switch (param1){
+      case 'supported':
+        this.sendMessage('Hello ' + this.incomingRequest.user.first_name + '!\n\n' + 'Currently supported countries:\n\n',this.incomingRequest.chat.id,false,this.createSupportedCountriesInlineKeyboard());
+        return;
+      default:
+        this.sendMessage('Hello ' + this.incomingRequest.user.first_name + '!\n' + this.startMessage,this.incomingRequest.chat.id,false);
+        return;
+    }
+  };
 
   TrendingResponder.prototype.processMessage = function(){
     // . commands first
-    if (this.commandRecieved('/start')){
-      this.sendMessage('Hello ' + this.incomingRequest.user.first_name + '!\n' + this.startMessage,false);
+    var command = this.commandRecieved('/start');
+    if (!!command){
+      this.start.apply(this, command.params);
       return;
     }
     if (this.commandRecieved('/trends')){
-      this.sendMessage(this.googleTrendsURL,false);
+      this.sendMessage(this.googleTrendsURL,this.incomingRequest.chat.id,false);
       return;
     }
     if (this.commandRecieved('/searches')){
-      this.sendMessage(this.googleTrendingSearchesURL,false);
+      this.sendMessage(this.googleTrendingSearchesURL,this.incomingRequest.chat.id,false);
       return;
     }
     if (this.commandRecieved('/youtube')){
-      this.sendMessage(this.youtubeTrendsURL,false);
+      this.sendMessage(this.youtubeTrendsURL,this.incomingRequest.chat.id,false);
       return;
     }
     if (this.commandRecieved('/dailymotion')){
-      this.sendMessage(this.dailymotionTrendsURL,false);
+      this.sendMessage(this.dailymotionTrendsURL,this.incomingRequest.chat.id,false);
       return;
     }
     if (this.commandRecieved('/vimeo')){
-      this.sendMessage(this.vimeoTrendsURL,false);
+      this.sendMessage(this.vimeoTrendsURL,this.incomingRequest.chat.id,false);
       return;
     }
-    this.sendMessage(this.defaultMessage,false);
+    this.sendMessage(this.defaultMessage,this.incomingRequest.chat.id,false);
   };
 
   TrendingResponder.prototype.processInlineQuery = function(){
@@ -326,15 +396,32 @@ function createTrendingResponder (execlib){
     this.googleTrendingFeedToJson(countryObj);
   };
 
+  TrendingResponder.prototype.processCallbackQuery = function(){
+    var bundle = this.incomingRequest.data.split('|');
+    var command = bundle[0];
+    var data = bundle[1];
+    switch (command){
+      case 'SUPPORTED':
+        this.sendMessage('You have successfully chosen ' + data + '!\n\n',this.incomingRequest.message.chat.id,false,this.createSelectedCountryInlineKeyboard(data));
+        return;
+      default:
+        this.sendMessage(this.defaultMessage,this.incomingRequest.message.chat.id,false);
+        return;
+    }
+  };
+
   TrendingResponder.prototype.process = function(){
     // . AI
-    console.log('Hej hej?',this.incomingRequest);
+    //console.log('Hej hej?',require('util').inspect(this.incomingRequest,{depth:5}));
     switch (this.incomingRequest.constructor.name){
       case 'Message':
         this.processMessage();
         break;
       case 'InlineQuery':
         this.processInlineQuery();
+        break;
+      case 'CallbackQuery':
+        this.processCallbackQuery();
         break;
       case 'ChosenInlineResult':
         this.res.end('{}'); // . what else?

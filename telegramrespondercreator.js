@@ -6,6 +6,7 @@ function createTelegramResponder (execlib) {
   var Message = MessageTypes.Message;
   var InlineQuery = MessageTypes.InlineQuery;
   var ChosenInlineResult = MessageTypes.ChosenInlineResult;
+  var CallbackQuery = MessageTypes.CallbackQuery;
 
   function TelegramResponder (res, jsonreq) {
     this.res = res;
@@ -26,12 +27,14 @@ function createTelegramResponder (execlib) {
     if (!!jsonreq.chosen_inline_result){
       return new ChosenInlineResult(jsonreq);
     }
+    if (!!jsonreq.callback_query){
+      return new CallbackQuery(jsonreq);
+    }
     //TODO edited_message, callback_query
     return jsonreq;
   };
   TelegramResponder.prototype.callMethod = function (methodName, params) {
-    var ret = JSON.stringify(lib.extend({method:methodName},params));
-    //console.log('ZOVEM OVU METODU',methodName,'SA OVIM PARAMETRIMA',params);
+    //var ret = JSON.stringify(lib.extend({method:methodName},params));
     this.res.setHeader('Content-Type', 'application/json');
     this.res.end(JSON.stringify(lib.extend({method:methodName},params)));
     this.destroy();

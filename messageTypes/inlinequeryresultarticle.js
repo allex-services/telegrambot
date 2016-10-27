@@ -39,6 +39,8 @@ function createInlineQueryResultArticle(execlib){
     if (!!thumb_width) this.thumb_width = thumb_width;
     if (!!thumb_height) this.thumb_height = thumb_height;
     //input_message_content is required so i must check it
+    if (!this.description) this.description = country + ': ' + item['ht:approx_traffic'];
+    if (!this.url) this.url = item.link;
     if (!this.input_message_content) this.input_message_content = new InputMessageContent(item.title + '\n' + (this.url || ''),'HTML');
   }
 
