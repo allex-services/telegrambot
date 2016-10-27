@@ -19,6 +19,7 @@
   "license": "ISC",
   "dependencies": {
     "emoji-flag": "^1.1.0",
-    "feedme": "^0.3.2"
+    "feedme": "^0.3.2",
+    "striptags": "^2.1.1"
   }
 }
