@@ -13,7 +13,6 @@ function createMessage(execlib){
     this.commands = [];
     this.hashtags = [];
     this.processEntities(jsonreq.message.entities); 
-    console.log('STA SI',require('util').inspect(jsonreq.message,{depth:5}));
     //console.log('STA SI',require('util').inspect(jsonreq.message.entities,{depth:5}));
   }
 

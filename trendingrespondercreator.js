@@ -123,7 +123,51 @@ function createTrendingResponder (execlib){
     'vi' : 46
   };
 
-  var googleTrendsCountryCodes = [
+  var googleTrendsCountryCode = [
+    {country: 'Global'},                     // 0. Global
+    {country: 'Argentina', countryCode: 'AR'},               // 1. Argentina 
+    {country: 'Australia', countryCode: 'AU'},               // 2. Australia
+    {country: 'Austria', countryCode: 'AT'},                // 3. Austria
+    {country: 'Belgium', countryCode: 'BE'},                 // 4. Belgium
+    {country: 'Brazil', countryCode: 'BR'},                  // 5. Brazil
+    {country: 'Canada', countryCode: 'CA'},                  // 6. Canada
+    {country: 'Chile', countryCode: 'CL'},                   // 7. Chile
+    {country: 'Colombia', countryCode: 'CO'},                // 8. Colombia
+    {country: 'France', countryCode: 'FR'},                  // 9. France
+    {country: 'Germany', countryCode: 'DE'},                 // 10. Germany
+    {country: 'India', countryCode: 'IN'},                    // 11. India
+    {country: 'Ireland', countryCode: 'IE'},                    // 12. Ireland
+    {country: 'Italy', countryCode: 'IT'},                   // 13. Italy
+    {country: 'Japan', countryCode: 'JP'},                    // 14. Japan
+    {country: 'Malaysia', countryCode: 'MY'},                // 15. Malaysia
+    {country: 'Mexico', countryCode: 'MX'},                  // 16. Mexico
+    {country: 'Netherlands', countryCode: 'NL'},             // 17. Netherlands
+    {country: 'New Zealand', countryCode: 'NZ'},             // 18. New Zealand 
+    {country: 'Norway', countryCode: 'NO'},                  // 19. Norway
+    {country: 'Peru', countryCode: 'PE'},                    // 20. Peru
+    {country: 'Phillippines', countryCode: 'PH'},            // 21. Phillippines
+    {country: 'Poland', countryCode: 'PL'},                  // 22. Poland
+    {country: 'Portugal', countryCode: 'PT'},                // 23. Portugal
+    {country: 'Russia', countryCode: 'RU'},                  // 24. Russia
+    {country: 'Sweden', countryCode: 'SE'},                  // 25. Sweden
+    {country: 'Switzerland', countryCode: 'CH'},             // 26. Switzerland
+    {country: 'Turkey', countryCode: 'TR'},                  // 27. Turkey
+    {country: 'United Kingdom', countryCode: 'GB'},           // 28. United Kingdom
+    {country: 'United States', countryCode: 'US'},            // 29. United States
+    {country: 'Vietnam', countryCode: 'VN'}                  // 30. Vietnam
+  ];
+
+  var googleTrendsCategories = [
+    {name: 'All', shortcode: 'all'},
+    {name: 'Business', shortcode: 'b'},
+    {name: 'Entertainment', shortcode: 'e'},
+    {name: 'Health', shortcode: 'm'},
+    {name: 'Sci/Tech', shortcode: 't'},
+    {name: 'Sports', shortcode: 's'},
+    {name: 'Top Stories', shortcode: 'h'}
+  ];
+
+  var googleSearchesCountryCode = [
     {code : '', country: 'Global'},                     // 0. Global
     {code : 'p30', country: 'Argentina', countryCode: 'AR'},               // 1. Argentina 
     {code : 'p8',  country: 'Australia', countryCode: 'AU'},               // 2. Australia
@@ -173,13 +217,48 @@ function createTrendingResponder (execlib){
     {code : 'p28', country: 'Vietnam', countryCode: 'VN'}                  // 46. Vietnam
   ];
 
+  var youtubeCountryCode = [
+    {country: 'Global'},                     // 0. Global
+    {country: 'Argentina', countryCode: 'AR'},               // 1. Argentina 
+    {country: 'Australia', countryCode: 'AU'},               // 2. Australia
+    {country: 'Brazil', countryCode: 'BR'},                  // 3. Brazil
+    {country: 'Canada', countryCode: 'CA'},                  // 4. Canada
+    {country: 'Egypt', countryCode: 'EG'},                   // 5. Egypt
+    {country: 'France', countryCode: 'FR'},                  // 6. France
+    {country: 'Germany', countryCode: 'DE'},                 // 7. Germany
+    {country: 'Greece', countryCode: 'GR'},                  // 8. Greece
+    {country: 'India', countryCode: 'IN'},                    // 9. India
+    {country: 'Italy', countryCode: 'IT'},                   // 10. Italy
+    {country: 'Japan', countryCode: 'JP'},                    // 11. Japan
+    {country: 'Mexico', countryCode: 'MX'},                  // 12. Mexico
+    {country: 'Morocco', countryCode: 'MA'},                  // 13. Morocoo
+    {country: 'Netherlands', countryCode: 'NL'},             // 14. Netherlands
+    {country: 'Phillippines', countryCode: 'PH'},            // 15. Phillippines
+    {country: 'Poland', countryCode: 'PL'},                  // 16. Poland
+    {country: 'Russia', countryCode: 'RU'},                  // 17. Russia
+    {country: 'Saudia Arabia', countryCode: 'SA'},           // 18. Saudia Arabia
+    {country: 'South Korea', countryCode: 'KR'},                  // 19. South Korea
+    {country: 'Sweden', countryCode: 'SE'},                  // 20. Sweden
+    {country: 'Taiwan', countryCode: 'TW'},                  // 21. Taiwan
+    {country: 'Thailand', countryCode: 'TH'},                // 22. Thailand
+    {country: 'Turkey', countryCode: 'TR'},                  // 23. Turkey
+    {country: 'Ukraine', countryCode: 'UA'},                 // 24. Ukraine
+    {country: 'United Kingdom', countryCode: 'GB'},           // 25. United Kingdom
+    {country: 'United States', countryCode: 'US'},            // 26. United States
+  ];
+
+  var youtubeFilters = [
+    {message: 'Safety filter: ON', value: 1},
+    {message: 'Safety filter: OFF', value: 0}
+  ];
+
   function getCountryObj(lcc){
     var curr = '', countryCode;
     for (var i=0; i<lcc.length; i++){
       curr += lcc[i];
       countryCode = countryCodes[curr];
       if (lib.isDefinedAndNotNull(countryCode)){
-        return googleTrendsCountryCodes[countryCode];
+        return googleSearchesCountryCode[countryCode];
       }
     }
     return null;
@@ -216,9 +295,9 @@ function createTrendingResponder (execlib){
 
   TrendingResponder.prototype.createSupportedCountriesMessage = function(){
     var ret = 'Currently supported countries:\n\n';
-    for (var i=1; i<googleTrendsCountryCodes.length; i++){
-      if (!googleTrendsCountryCodes[i].disabled){
-        ret += EmojiFlag(googleTrendsCountryCodes[i].countryCode) + ' ' + googleTrendsCountryCodes[i].country + '\n\n';
+    for (var i=1; i<googleSearchesCountryCode.length; i++){
+      if (!googleSearchesCountryCode[i].disabled){
+        ret += EmojiFlag(googleSearchesCountryCode[i].countryCode) + ' ' + googleSearchesCountryCode[i].country + '\n\n';
       }
     }
     return ret;
@@ -226,12 +305,40 @@ function createTrendingResponder (execlib){
 
   TrendingResponder.prototype.createSupportedCountriesInlineKeyboard = function(dataprefix){
     var ikm = new InlineKeyboardMarkup(15);
-    for (var i=1; i<googleTrendsCountryCodes.length; i++){
-      if (!googleTrendsCountryCodes[i].disabled){
+    for (var i=1; i<googleSearchesCountryCode.length; i++){
+      if (!googleSearchesCountryCode[i].disabled){
         ikm.addButton(new InlineKeyboardButton({
-          text: EmojiFlag(googleTrendsCountryCodes[i].countryCode) + ' ' + googleTrendsCountryCodes[i].country,
-          callback_data: dataprefix + '|' + googleTrendsCountryCodes[i].country
-          //switch_inline_query: googleTrendsCountryCodes[i].country
+          text: EmojiFlag(googleSearchesCountryCode[i].countryCode) + ' ' + googleSearchesCountryCode[i].country,
+          callback_data: dataprefix + '|' + googleSearchesCountryCode[i].country
+          //switch_inline_query: googleSearchesCountryCode[i].country
+        }));
+      }
+    }
+    return ikm.telegramType();
+  };
+
+  TrendingResponder.prototype.createSupportedTrendsCountriesInlineKeyboard = function(dataprefix){
+    var ikm = new InlineKeyboardMarkup(10);
+    for (var i=1; i<googleTrendsCountryCode.length; i++){
+      if (!googleTrendsCountryCode[i].disabled){
+        ikm.addButton(new InlineKeyboardButton({
+          text: EmojiFlag(googleTrendsCountryCode[i].countryCode) + ' ' + googleTrendsCountryCode[i].country,
+          callback_data: dataprefix + '|' + googleTrendsCountryCode[i].countryCode
+          //switch_inline_query: googleSearchesCountryCode[i].country
+        }));
+      }
+    }
+    return ikm.telegramType();
+  };
+
+  TrendingResponder.prototype.createSupportedYoutubeCountriesInlineKeyboard = function(dataprefix){
+    var ikm = new InlineKeyboardMarkup(13);
+    for (var i=1; i<youtubeCountryCode.length; i++){
+      if (!youtubeCountryCode[i].disabled){
+        ikm.addButton(new InlineKeyboardButton({
+          text: EmojiFlag(youtubeCountryCode[i].countryCode) + ' ' + youtubeCountryCode[i].country,
+          callback_data: dataprefix + '|' + youtubeCountryCode[i].countryCode
+          //switch_inline_query: googleSearchesCountryCode[i].country
         }));
       }
     }
@@ -257,12 +364,34 @@ function createTrendingResponder (execlib){
     return ikm.telegramType();
   };
 
-  TrendingResponder.prototype.createTopicsInlineKeyboard = function(param){
+  TrendingResponder.prototype.createTopicsInlineKeyboard = function(){
     var ikm = new InlineKeyboardMarkup(this.items.length);
     for (var i=0; i<this.items.length; i++){
       ikm.addButton(new InlineKeyboardButton({
         text: this.items[i].title,
         url:this.items[i].url 
+      }));
+    }
+    return ikm.telegramType();
+  };
+
+  TrendingResponder.prototype.createTrendsCategoriesInlineKeyboard = function(countryCode){
+    var ikm = new InlineKeyboardMarkup(googleTrendsCategories.length);
+    for (var i=0; i<googleTrendsCategories.length; i++){
+      ikm.addButton(new InlineKeyboardButton({
+        text: googleTrendsCategories[i].name,
+        url: 'https://www.google.com/trends/home/'+googleTrendsCategories[i].shortcode+'/'+countryCode
+      }));
+    }
+    return ikm.telegramType();
+  };
+
+  TrendingResponder.prototype.createYoutubeFiltersInlineKeyboard = function(countryCode){
+    var ikm = new InlineKeyboardMarkup(youtubeFilters.length);
+    for (var i=0; i<youtubeFilters.length; i++){
+      ikm.addButton(new InlineKeyboardButton({
+        text: youtubeFilters[i].message,
+        url: 'https://www.google.com/trends/hotvideos#geo='+countryCode+'&hvsm='+youtubeFilters[i].value
       }));
     }
     return ikm.telegramType();
@@ -397,6 +526,14 @@ function createTrendingResponder (execlib){
     this.sendMessage('Choose a country:\n\n',this.incomingRequest.chat.id,false,this.createSupportedCountriesInlineKeyboard('REGULAR_SUPPORTED'));
   };
 
+  TrendingResponder.prototype.sendTrends = function(){
+    this.sendMessage('Choose a country:\n\n',this.incomingRequest.chat.id,false,this.createSupportedTrendsCountriesInlineKeyboard('REGULAR_TRENDS_SUPPORTED'));
+  };
+
+  TrendingResponder.prototype.sendYoutube = function(){
+    this.sendMessage('Choose a country:\n\n',this.incomingRequest.chat.id,false,this.createSupportedYoutubeCountriesInlineKeyboard('REGULAR_YOUTUBE_SUPPORTED'));
+  };
+
   TrendingResponder.prototype.processMessage = function(){
     // . commands first
     var command = this.commandRecieved('/start');
@@ -414,17 +551,19 @@ function createTrendingResponder (execlib){
       this.sendShare.apply(this, command.params);
       return;
     }
-    if (this.commandRecieved('/trends')){
-      this.sendMessage(this.googleTrendsURL,this.incomingRequest.chat.id,false);
+    command = this.commandRecieved('/trends');
+    if (!!command){
+      this.sendTrends.apply(this, command.params);
       return;
     }
     command = this.commandRecieved('/searches');
-    if (command){
+    if (!!command){
       this.sendSearches.apply(this, command.params);
       return;
     }
-    if (this.commandRecieved('/youtube')){
-      this.sendMessage(this.youtubeTrendsURL,this.incomingRequest.chat.id,false);
+    command = this.commandRecieved('/youtube');
+    if (!!command){
+      this.sendYoutube.apply(this, command.params);
       return;
     }
     if (this.commandRecieved('/dailymotion')){
@@ -458,8 +597,13 @@ function createTrendingResponder (execlib){
         this.sendMessage('Trends from ' + data + ' chosen\n\n',this.incomingRequest.message.chat.id,false,this.createSelectedCountryInlineKeyboard(data),true);
         return;
       case 'REGULAR_SUPPORTED':
-        console.log('REGULAR!!!',this.incomingRequest);
         this.googleTrendingFeedToJson(getCountryObj(data.toLowerCase()),this.onRegularTrendsFetched.bind(this,data));
+        return;
+      case 'REGULAR_TRENDS_SUPPORTED':
+        this.sendMessage('Pick category:\n\n',this.incomingRequest.message.chat.id,false,this.createTrendsCategoriesInlineKeyboard(data),true);
+        return;
+      case 'REGULAR_YOUTUBE_SUPPORTED':
+        this.sendMessage('Choose safety filter:\n\n',this.incomingRequest.message.chat.id,false,this.createYoutubeFiltersInlineKeyboard(data),true);
         return;
       default:
         this.sendMessage(this.defaultMessage,this.incomingRequest.message.chat.id,false,true);
