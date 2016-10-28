@@ -355,7 +355,6 @@ function createTrendingResponder (execlib){
   };
 
   TrendingResponder.prototype.createGoInline = function(param){
-    console.log('PARAM?',param);
     var ikm = new InlineKeyboardMarkup(1);
     ikm.addButton(new InlineKeyboardButton({
       text: 'Go Inline!',
