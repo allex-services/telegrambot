@@ -24,12 +24,12 @@ function createInlineQueryResultArticle(execlib){
       //title
       if (!!item['ht:news_item'][0]['ht:news_item_title']){
         item['ht:news_item'][0]['ht:news_item_title'] = this.removeHTMLTags(item['ht:news_item'][0]['ht:news_item_title'],[],map);
-        this.description = country + ': ' + item['ht:approx_traffic'] + '\n' + item['ht:news_item'][0]['ht:news_item_title'];
+        this.description = 'Article, ' + country + ': ' + item['ht:approx_traffic'] + '\n' + item['ht:news_item'][0]['ht:news_item_title'];
       }
       //snippet
       if (!!item['ht:news_item'][0]['ht:news_item_snippet']){
         item['ht:news_item'][0]['ht:news_item_snippet'] = this.removeHTMLTags(item['ht:news_item'][0]['ht:news_item_snippet'],['b','i','a','code','pre'],mapWithoutAllowed);
-        this.input_message_content = new InputMessageContent(item['ht:news_item'][0]['ht:news_item_snippet'] + '\n' + this.url || '' ,'HTML');
+        this.input_message_content = new InputMessageContent('<i>Trending article ' + (country === 'Global' ? 'globally' : 'in ' + country) + '; Traffic: ' + item['ht:approx_traffic'] + '</i>\n\n' + item['ht:news_item'][0]['ht:news_item_snippet'] + '\n\n' + this.url || '' ,'HTML');
       }
     }
     //thumb url
@@ -39,9 +39,9 @@ function createInlineQueryResultArticle(execlib){
     if (!!thumb_width) this.thumb_width = thumb_width;
     if (!!thumb_height) this.thumb_height = thumb_height;
     //input_message_content is required so i must check it
-    if (!this.description) this.description = country + ': ' + item['ht:approx_traffic'];
-    if (!this.url) this.url = item.link;
-    if (!this.input_message_content) this.input_message_content = new InputMessageContent(item.title + '\n' + (this.url || ''),'HTML');
+    if (!this.description) this.description = 'Topic, ' + country + ': ' + item['ht:approx_traffic'];
+    if (!this.url) this.url = item.link.split('#')[0]; //sometimes not working with anchor...
+    if (!this.input_message_content) this.input_message_content = new InputMessageContent('<i>Trending article ' + (country === 'Global' ? 'globally' : 'in ' + country) + '; Traffic: ' + item['ht:approx_traffic'] + '</i>\n\n<b>' + item.title + '</b>\n\n' + (this.url || ''),'HTML');
   }
 
   InlineQueryResultArticle.prototype.destroy = function(){

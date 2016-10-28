@@ -134,7 +134,7 @@ function createTrendingResponder (execlib){
     {code : 'p38', country: 'Chile', countryCode: 'CL'},                   // 7. Chile
     {code : 'p32', country: 'Colombia', countryCode: 'CO'},                // 8. Colombia
     {code : 'p43', country: 'Czech Republic', countryCode: 'CZ'},          // 9. Czech Republic
-    {code : 'p49', country: 'Denmark', countryCode: 'DE'},                 // 10. Denmark
+    {code : 'p49', country: 'Denmark', countryCode: 'DK'},                 // 10. Denmark
     {code : 'p29', country: 'Egypt', countryCode: 'EG'},                   // 11. Egypt
     {code : 'p50', country: 'Finland', countryCode: 'FI'},                 // 12. Finland
     {code : 'p16', country: 'France', countryCode: 'FR'},                  // 13. France
@@ -186,8 +186,8 @@ function createTrendingResponder (execlib){
   }
 
   function TrendingResponder(res, req){
-    this.defaultMessage = 'Why don\'t you look for trending topics around the world?\n\nTry:\n\n/trends\n/searches\n/youtube\n/dailymotion\n/vimeo';
-    this.startMessage = 'If you look for trending topics around the world you are at the perfect place.\n\nYou can control me by sending these commands:\n\n/trends\n/searches\n/youtube\n/dailymotion\n/vimeo';
+    this.defaultMessage = 'Why don\'t you look for trending topics around the world?\n\nTry one of these:\n\n/inline\n/share\n/trends\n/searches\n/youtube\n/dailymotion\n/vimeo';
+    this.startMessage = 'If you look for trending topics around the world you are at the perfect place.\n\nYou can control me by sending these commands:\n\n/inline\n/share\n/trends\n/searches\n/youtube\n/dailymotion\n/vimeo';
     this.googleTrendsFeedURL = 'https://www.google.com/trends/hottrends/atom/feed';
     this.googleTrendsURL = 'https://www.google.com/trends/';
     this.googleTrendingSearchesURL = 'https:// . www.google.com/trends/hottrends';
@@ -224,13 +224,13 @@ function createTrendingResponder (execlib){
     return ret;
   };
 
-  TrendingResponder.prototype.createSupportedCountriesInlineKeyboard = function(){
+  TrendingResponder.prototype.createSupportedCountriesInlineKeyboard = function(dataprefix){
     var ikm = new InlineKeyboardMarkup(15);
     for (var i=1; i<googleTrendsCountryCodes.length; i++){
       if (!googleTrendsCountryCodes[i].disabled){
         ikm.addButton(new InlineKeyboardButton({
           text: EmojiFlag(googleTrendsCountryCodes[i].countryCode) + ' ' + googleTrendsCountryCodes[i].country,
-          callback_data: 'SUPPORTED|' + googleTrendsCountryCodes[i].country
+          callback_data: dataprefix + '|' + googleTrendsCountryCodes[i].country
           //switch_inline_query: googleTrendsCountryCodes[i].country
         }));
       }
@@ -247,10 +247,31 @@ function createTrendingResponder (execlib){
     return ikm.telegramType();
   };
 
-  TrendingResponder.prototype.googleTrendingFeedToJson = function(countryObj){
+  TrendingResponder.prototype.createGoInline = function(param){
+    console.log('PARAM?',param);
+    var ikm = new InlineKeyboardMarkup(1);
+    ikm.addButton(new InlineKeyboardButton({
+      text: 'Go Inline!',
+      switch_inline_query_current_chat: param
+    }));
+    return ikm.telegramType();
+  };
+
+  TrendingResponder.prototype.createTopicsInlineKeyboard = function(param){
+    var ikm = new InlineKeyboardMarkup(this.items.length);
+    for (var i=0; i<this.items.length; i++){
+      ikm.addButton(new InlineKeyboardButton({
+        text: this.items[i].title,
+        url:this.items[i].url 
+      }));
+    }
+    return ikm.telegramType();
+  };
+
+  TrendingResponder.prototype.googleTrendingFeedToJson = function(countryObj,otf){
     var code = (!countryObj ? null : countryObj.code);
     var country = (!countryObj ? 'Global' : countryObj.country);
-    var oi = this.onItem.bind(this,country), otf = this.onTrendsFetched.bind(this);
+    var oi = this.onItem.bind(this,country), otf = otf || this.onTrendsFetched.bind(this);
     var requestUrl = this.googleTrendsFeedURL + (!code ? '' : '?pn=' + code);
     Https.get(requestUrl, function (res) {
       var p = new FeedMe();
@@ -283,6 +304,7 @@ function createTrendingResponder (execlib){
   };
 
   TrendingResponder.prototype.onTrendsFetched = function () {
+    //console.log('DA GA VIDIMO STA SALJEMO',require('util').inspect(this.items,{depth:5}));
     this.callMethod('answerInlineQuery',new ReplyInlineQuery({
       inline_query_id : this.incomingRequest.id,
       results : JSON.stringify(this.items),
@@ -306,7 +328,11 @@ function createTrendingResponder (execlib){
     */
   };
 
-  TrendingResponder.prototype.sendMessage = function(text,chat_id,replyFlag,replyMarkup){
+  TrendingResponder.prototype.onRegularTrendsFetched = function(country){
+    this.sendMessage('Check out trending topics for ' + country+ ':\n\n',this.incomingRequest.message.chat.id,false,this.createTopicsInlineKeyboard());
+  };
+
+  TrendingResponder.prototype.sendMessage = function(text,chat_id,replyFlag,replyMarkup,silently){
     var prophash = {
       chat_id : chat_id,
       text : text
@@ -316,6 +342,9 @@ function createTrendingResponder (execlib){
     }
     if (!!replyMarkup){
       prophash.reply_markup = replyMarkup;
+    }
+    if (!!silently){
+      prophash.disable_notification = silently;
     }
     this.callMethod('sendMessage',new ReplyMessage(prophash));
     /*
@@ -347,12 +376,25 @@ function createTrendingResponder (execlib){
   TrendingResponder.prototype.start = function(param1){
     switch (param1){
       case 'supported':
-        this.sendMessage('Hello ' + this.incomingRequest.user.first_name + '!\n\n' + 'Currently supported countries:\n\n',this.incomingRequest.chat.id,false,this.createSupportedCountriesInlineKeyboard());
+        this.sendMessage('Hello ' + this.incomingRequest.user.first_name + '!\n\n' + 'Currently supported countries:\n\n',this.incomingRequest.chat.id,false,this.createSupportedCountriesInlineKeyboard('INLINE_SUPPORTED'));
         return;
       default:
-        this.sendMessage('Hello ' + this.incomingRequest.user.first_name + '!\n' + this.startMessage,this.incomingRequest.chat.id,false);
+        this.sendMessage('Hello ' + this.incomingRequest.user.first_name + '!\n\n' + this.startMessage,this.incomingRequest.chat.id,false);
         return;
     }
+  };
+
+  TrendingResponder.prototype.sendInline = function(param1){
+    param1 = param1 || null;
+    this.sendMessage('Click the button to switch to Inline mode\n',this.incomingRequest.chat.id,false,this.createGoInline(param1));
+  };
+
+  TrendingResponder.prototype.sendShare = function(){
+    this.sendMessage('Choose a country:\n\n',this.incomingRequest.chat.id,false,this.createSupportedCountriesInlineKeyboard('INLINE_SUPPORTED'));
+  };
+
+  TrendingResponder.prototype.sendSearches = function(){
+    this.sendMessage('Choose a country:\n\n',this.incomingRequest.chat.id,false,this.createSupportedCountriesInlineKeyboard('REGULAR_SUPPORTED'));
   };
 
   TrendingResponder.prototype.processMessage = function(){
@@ -362,12 +404,23 @@ function createTrendingResponder (execlib){
       this.start.apply(this, command.params);
       return;
     }
+    command = this.commandRecieved('/inline');
+    if (!!command){
+      this.sendInline.apply(this, command.params);
+      return;
+    }
+    command = this.commandRecieved('/share');
+    if (!!command){
+      this.sendShare.apply(this, command.params);
+      return;
+    }
     if (this.commandRecieved('/trends')){
       this.sendMessage(this.googleTrendsURL,this.incomingRequest.chat.id,false);
       return;
     }
-    if (this.commandRecieved('/searches')){
-      this.sendMessage(this.googleTrendingSearchesURL,this.incomingRequest.chat.id,false);
+    command = this.commandRecieved('/searches');
+    if (command){
+      this.sendSearches.apply(this, command.params);
       return;
     }
     if (this.commandRecieved('/youtube')){
@@ -401,11 +454,15 @@ function createTrendingResponder (execlib){
     var command = bundle[0];
     var data = bundle[1];
     switch (command){
-      case 'SUPPORTED':
-        this.sendMessage('You have successfully chosen ' + data + '!\n\n',this.incomingRequest.message.chat.id,false,this.createSelectedCountryInlineKeyboard(data));
+      case 'INLINE_SUPPORTED':
+        this.sendMessage('Trends from ' + data + ' chosen\n\n',this.incomingRequest.message.chat.id,false,this.createSelectedCountryInlineKeyboard(data),true);
+        return;
+      case 'REGULAR_SUPPORTED':
+        console.log('REGULAR!!!',this.incomingRequest);
+        this.googleTrendingFeedToJson(getCountryObj(data.toLowerCase()),this.onRegularTrendsFetched.bind(this,data));
         return;
       default:
-        this.sendMessage(this.defaultMessage,this.incomingRequest.message.chat.id,false);
+        this.sendMessage(this.defaultMessage,this.incomingRequest.message.chat.id,false,true);
         return;
     }
   };
