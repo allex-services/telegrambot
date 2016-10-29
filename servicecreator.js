@@ -1,4 +1,4 @@
-function createTrendingService(execlib, ParentService) {
+function createTelegramBotService(execlib, ParentService) {
   'use strict';
   
   var lib = execlib.lib,
@@ -11,14 +11,14 @@ function createTrendingService(execlib, ParentService) {
     };
   }
 
-  function TrendingService(prophash) {
+  function TelegramBotService(prophash) {
     ParentService.call(this, prophash);
     this.createListenerMethod(prophash.token, prophash.modulehandler);
   }
   
-  ParentService.inherit(TrendingService, factoryCreator);
+  ParentService.inherit(TelegramBotService, factoryCreator);
   
-  TrendingService.prototype.__cleanUp = function() {
+  TelegramBotService.prototype.__cleanUp = function() {
     ParentService.prototype.__cleanUp.call(this);
   };
 
@@ -46,17 +46,17 @@ function createTrendingService(execlib, ParentService) {
     return ret;
   }
 
-  TrendingService.prototype.createListenerMethod = function (token, modulehandlername) {
-    TrendingService.prototype[token] = listenerGenerator(modulehandlername);
+  TelegramBotService.prototype.createListenerMethod = function (token, modulehandlername) {
+    TelegramBotService.prototype[token] = listenerGenerator(modulehandlername);
   };
 
   /*
-  TrendingService.prototype['260656864:AAEERH7CqNskjOT1f1VbNT0PLJ61QEYoBTE'] = function(url, req, res){
+  TelegramBotService.prototype['260656864:AAEERH7CqNskjOT1f1VbNT0PLJ61QEYoBTE'] = function(url, req, res){
   };
   */
 
 
-  TrendingService.prototype.propertyHashDescriptor = {
+  TelegramBotService.prototype.propertyHashDescriptor = {
     token: {
       type: 'string'
     },
@@ -66,7 +66,7 @@ function createTrendingService(execlib, ParentService) {
   };
 
   
-  return TrendingService;
+  return TelegramBotService;
 }
 
-module.exports = createTrendingService;
+module.exports = createTelegramBotService;
