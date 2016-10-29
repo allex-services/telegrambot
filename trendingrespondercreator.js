@@ -1,13 +1,12 @@
 var FeedMe = require('feedme'),
   Https = require('https');
 
-function createTrendingResponder (execlib){
+function createTrendingResponder (TelegramResponder, execlib){
 
   var lib = execlib.lib;
 
-  var TelegramResponder = require('./telegramrespondercreator')(execlib);
   var lib = execlib.lib;
-  var MessageTypes = require('./messageTypes/messagetypes.js')(execlib);
+  var MessageTypes = TelegramResponder.MessageTypes;
   var ReplyMessage = MessageTypes.ReplyMessage;
   var ReplyInlineQuery = MessageTypes.ReplyInlineQuery;
   var InlineQueryResultArticle = MessageTypes.InlineQueryResultArticle;
@@ -266,7 +265,7 @@ function createTrendingResponder (execlib){
 
   function TrendingResponder(res, req){
     this.defaultMessage = 'Why don\'t you look for trending topics around the world?\n\nTry one of these:\n\n/inline\n/share\n/trends\n/searches\n/youtube\n/dailymotion\n/vimeo';
-    this.startMessage = 'If you look for trending topics around the world you are at the perfect place.\n\nYou can control me by sending these commands:\n\n/inline\n/share\n/trends\n/searches\n/youtube\n/dailymotion\n/vimeo';
+    this.startMessage = 'If you are looking for trending topics around the world you are at the perfect place.\n\nYou can control me by sending these commands:\n\n/inline\n/share\n/trends\n/searches\n/youtube\n/dailymotion\n/vimeo';
     this.googleTrendsFeedURL = 'https://www.google.com/trends/hottrends/atom/feed';
     this.googleTrendsURL = 'https://www.google.com/trends/';
     this.googleTrendingSearchesURL = 'https:// . www.google.com/trends/hottrends';

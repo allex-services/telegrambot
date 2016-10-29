@@ -51,7 +51,7 @@ function createTelegramResponder (execlib) {
       if (!responderClassName){
         new TelegramResponder(res, jsonreq);
       }else{
-        responderClass = require('./' + responderClassName + 'respondercreator.js')(execlib);
+        responderClass = require('./' + responderClassName + 'respondercreator.js')(TelegramResponder, execlib);
         new responderClass(res, jsonreq);
       }
     } catch(e) {
@@ -59,6 +59,8 @@ function createTelegramResponder (execlib) {
       res.end('');
     }
   };
+
+  TelegramResponder.MessageTypes = require('./messageTypes/messagetypes.js')(execlib);
 
 
   return TelegramResponder;
