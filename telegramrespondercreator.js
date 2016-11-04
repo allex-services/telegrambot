@@ -44,15 +44,14 @@ function createTelegramResponder (execlib) {
   TelegramResponder.prototype.process = function () {
   };
 
-  TelegramResponder.factory = function (res, responderClassName, req) {
+  TelegramResponder.factory = function (res, responderClass, req) {
     var jsonreq, responderClass;
     try {
       jsonreq = JSON.parse(req);
-      if (!responderClassName){
+      if (!responderClass){
         new TelegramResponder(res, jsonreq);
       }else{
         //responderClass = require('./' + responderClassName + 'respondercreator.js')(TelegramResponder, execlib);
-        responderClass = require(responderClassName)(TelegramResponder, execlib);
         new responderClass(res, jsonreq);
       }
     } catch(e) {

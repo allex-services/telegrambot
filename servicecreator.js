@@ -2,6 +2,7 @@ function createTelegramBotService(execlib, ParentService) {
   'use strict';
   
   var lib = execlib.lib,
+    q = lib.q,
     TelegramResponder = require('./telegramrespondercreator')(execlib);
 
   function factoryCreator(parentFactory) {
@@ -13,7 +14,9 @@ function createTelegramBotService(execlib, ParentService) {
 
   function TelegramBotService(prophash) {
     ParentService.call(this, prophash);
-    this.createListenerMethod(prophash.token, prophash.modulehandler);
+    this.createListenerMethod(prophash.token, prophash.modulehandler).then(
+      this.readyToAcceptUsersDefer.resolve.bind(this.readyToAcceptUsersDefer, true)
+    );
   }
   
   ParentService.inherit(TelegramBotService, factoryCreator);
@@ -22,32 +25,40 @@ function createTelegramBotService(execlib, ParentService) {
     ParentService.prototype.__cleanUp.call(this);
   };
 
+  TelegramBotService.prototype.isInitiallyReady = function () {
+    return false;
+  };
+
   function catchHelper(res,err){
     res.end('{}');
     console.error(err);
+    res = null;
+    err = null;
   }
 
-  function listenerGenerator (modulehandlername) {
+  function onModuleHandler (token, respondermodule) {
+    var responderClass = respondermodule(TelegramResponder);
     var ret = function (url, req, res) {
-      if (!modulehandlername) {
+      if (!responderClass) {
         //throw lib.Error(...);
         res.end('{}');
         return;
       }
       this.extractRequestParams(url, req).then(
-        TelegramResponder.factory.bind(null, res, modulehandlername)
+        TelegramResponder.factory.bind(null, res, responderClass)
       ).catch(
         catchHelper.bind(null,res) 
       );
     };
     ret.destroy = function () {
-      modulehandlername = null;
+      responderClass = null;
     };
-    return ret;
+    TelegramBotService.prototype[token] = ret;
+    return q(true);
   }
 
   TelegramBotService.prototype.createListenerMethod = function (token, modulehandlername) {
-    TelegramBotService.prototype[token] = listenerGenerator(modulehandlername);
+    return execlib.loadDependencies('client', [modulehandlername], onModuleHandler.bind(null, token));
   };
 
   /*
