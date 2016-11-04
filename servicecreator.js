@@ -41,6 +41,7 @@ function createTelegramBotService(execlib, ParentService) {
     if (!results || !timestamp){
       return false;
     }
+    console.log('Evo ga timestamp',timestamp,'A evo i razlike u vremenu',Date.now()-timestamp);
     if (Date.now() - timestamp > this.cache_time){
       item.results = null;
       item.timestamp = null;
