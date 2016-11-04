@@ -14,6 +14,10 @@ function createTelegramBotService(execlib, ParentService) {
 
   function TelegramBotService(prophash) {
     ParentService.call(this, prophash);
+    this.cache = new lib.Map();
+    this.cache_time = prophash.cache_time || 300 * 60 * 1000;
+    this.job_interval = prophash.job_interval || 60 * 1000;
+    this.clearCacheCronJob();
     this.createListenerMethod(prophash.token, prophash.modulehandler).then(
       this.readyToAcceptUsersDefer.resolve.bind(this.readyToAcceptUsersDefer, true)
     );
@@ -22,7 +26,41 @@ function createTelegramBotService(execlib, ParentService) {
   ParentService.inherit(TelegramBotService, factoryCreator);
   
   TelegramBotService.prototype.__cleanUp = function() {
+    this.cache_time = null;
+    if (!!this.cache){
+      this.cache.destroy();
+    }
+    this.cache = null;
     ParentService.prototype.__cleanUp.call(this);
+  };
+
+  TelegramBotService.prototype.invalidateCacheEntry = function(item,name,map){
+    var ret;
+    var results = item.results;
+    var timestamp = item.timestamp;
+    console.log('NAME:',name,'ITEM',item);
+    if (!results || !timestamp){
+      return false;
+    }
+    if (Date.now() - timestamp > this.cache_time){
+      item.results = null;
+      item.timestamp = null;
+      console.log('Ovaj je zastareo!',name,'njegov item',item);
+      return true;
+    }
+    return false;
+  };
+
+  TelegramBotService.prototype.clearCache = function(){
+    console.log('Idem u traversiranje cache-a');
+    this.cache.traverse(this.invalidateCacheEntry.bind(this));
+    console.log('Ispraznio cache!');
+    this.clearCacheCronJob();
+  };
+
+  TelegramBotService.prototype.clearCacheCronJob = function(){
+    console.log('Navio sad koji ce za ' + this.job_interval + ' da clearuje cache');
+    setTimeout(this.clearCache.bind(this),this.job_interval);
   };
 
   TelegramBotService.prototype.isInitiallyReady = function () {
@@ -45,7 +83,7 @@ function createTelegramBotService(execlib, ParentService) {
         return;
       }
       this.extractRequestParams(url, req).then(
-        TelegramResponder.factory.bind(null, res, responderClass)
+        TelegramResponder.factory.bind(null, res, responderClass, this.cache)
       ).catch(
         catchHelper.bind(null,res) 
       );

@@ -30,7 +30,7 @@ function createTelegramResponder (execlib) {
     if (!!jsonreq.callback_query){
       return new CallbackQuery(jsonreq);
     }
-    //TODO edited_message, callback_query
+    //TODO edited_message
     return jsonreq;
   };
   TelegramResponder.prototype.callMethod = function (methodName, params) {
@@ -44,7 +44,7 @@ function createTelegramResponder (execlib) {
   TelegramResponder.prototype.process = function () {
   };
 
-  TelegramResponder.factory = function (res, responderClass, req) {
+  TelegramResponder.factory = function (res, responderClass, cache, req) {
     var jsonreq, responderClass;
     try {
       jsonreq = JSON.parse(req);
@@ -52,7 +52,7 @@ function createTelegramResponder (execlib) {
         new TelegramResponder(res, jsonreq);
       }else{
         //responderClass = require('./' + responderClassName + 'respondercreator.js')(TelegramResponder, execlib);
-        new responderClass(res, jsonreq);
+        new responderClass(res, jsonreq, cache);
       }
     } catch(e) {
       console.error(e);
