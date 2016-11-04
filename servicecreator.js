@@ -15,8 +15,8 @@ function createTelegramBotService(execlib, ParentService) {
   function TelegramBotService(prophash) {
     ParentService.call(this, prophash);
     this.cache = new lib.Map();
-    this.cache_time = prophash.cache_time || 300 * 60 * 1000;
-    this.job_interval = prophash.job_interval || 60 * 1000;
+    this.cache_time = prophash.cache_time ||  30 * 1000;
+    this.job_interval = prophash.job_interval || 15 * 1000;
     this.clearCacheCronJob();
     this.createListenerMethod(prophash.token, prophash.modulehandler).then(
       this.readyToAcceptUsersDefer.resolve.bind(this.readyToAcceptUsersDefer, true)
@@ -38,14 +38,13 @@ function createTelegramBotService(execlib, ParentService) {
     var ret;
     var results = item.results;
     var timestamp = item.timestamp;
-    console.log('NAME:',name,'ITEM',item);
     if (!results || !timestamp){
       return false;
     }
     if (Date.now() - timestamp > this.cache_time){
       item.results = null;
       item.timestamp = null;
-      console.log('Ovaj je zastareo!',name,'njegov item',item);
+      console.log('Ovaj je zastareo!',name);
       return true;
     }
     return false;
