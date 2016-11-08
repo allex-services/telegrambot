@@ -8,7 +8,8 @@ function createMessageTypes(execlib){
     InlineQueryResultArticle: require('./inlinequeryresultarticle.js')(execlib),
     ChosenInlineResult: require('./choseninlineresult.js')(execlib),
     InlineKeyboardButton: require('./inlinekeyboardbutton.js')(execlib),
-    InlineKeyboardMarkup : require('./inlinekeyboardmarkup.js')(execlib)
+    InlineKeyboardMarkup : require('./inlinekeyboardmarkup.js')(execlib),
+    InProcessRequest: require('./inprocessrequest.js')(execlib)
   };
 }
 

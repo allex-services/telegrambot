@@ -14,10 +14,14 @@ function createTelegramBotService(execlib, ParentService) {
 
   function TelegramBotService(prophash) {
     ParentService.call(this, prophash);
+    this.token = prophash.token;
     this.cache = new lib.Map();
-    this.cache_time = prophash.cache_time ||  30 * 1000;
+    this.cache_time = prophash.cache_time ||  15 * 60 * 1000;
     this.job_interval = prophash.job_interval || 15 * 1000;
-    this.clearCacheCronJob();
+    this.invalidateCount = 0; //to lib
+    this.aged = []; //to lib
+    this.maxAge = 4*60*2; //2 hours, to lib
+    this.doCronJob(); //to lib
     this.createListenerMethod(prophash.token, prophash.modulehandler).then(
       this.readyToAcceptUsersDefer.resolve.bind(this.readyToAcceptUsersDefer, true)
     );
@@ -26,41 +30,69 @@ function createTelegramBotService(execlib, ParentService) {
   ParentService.inherit(TelegramBotService, factoryCreator);
   
   TelegramBotService.prototype.__cleanUp = function() {
+    this.aged = null;
+    this.invalidateCount = null;
+    this.job_interval = null;
     this.cache_time = null;
     if (!!this.cache){
       this.cache.destroy();
     }
     this.cache = null;
+    this.token = null;
     ParentService.prototype.__cleanUp.call(this);
+  };
+
+  TelegramBotService.prototype.doAging = function(item,name){
+    if (!lib.isDefinedAndNotNull(item.age)) item = 0;
+    item.age++;
+    if (item.age >= this.maxAge){
+      this.aged.push(name);
+    }
   };
 
   TelegramBotService.prototype.invalidateCacheEntry = function(item,name,map){
     var ret;
     var results = item.results;
     var timestamp = item.timestamp;
+    if (name.indexOf('PERSISTENT') === 0){
+      return;
+    }
+    this.doAging(item,name);
     if (!results || !timestamp){
       return false;
     }
-    console.log('Evo ga timestamp',timestamp,'A evo i razlike u vremenu',Date.now()-timestamp);
     if (Date.now() - timestamp > this.cache_time){
       item.results = null;
       item.timestamp = null;
-      console.log('Ovaj je zastareo!',name);
       return true;
     }
     return false;
   };
 
-  TelegramBotService.prototype.clearCache = function(){
-    console.log('Idem u traversiranje cache-a');
-    this.cache.traverse(this.invalidateCacheEntry.bind(this));
-    console.log('Ispraznio cache!');
-    this.clearCacheCronJob();
+  TelegramBotService.prototype.removeFromCache = function(entryName){
+    var ret = this.cache.remove(entryName);
+    console.log('IZBRISAO IZ CACHE!');
   };
 
-  TelegramBotService.prototype.clearCacheCronJob = function(){
-    console.log('Navio sad koji ce za ' + this.job_interval + ' da clearuje cache');
-    setTimeout(this.clearCache.bind(this),this.job_interval);
+  TelegramBotService.prototype.clearCache = function(){
+    this.cache.traverse(this.invalidateCacheEntry.bind(this));
+    this.aged.forEach(this.removeFromCache.bind(this));
+    this.aged = [];
+  };
+
+  TelegramBotService.prototype.makeInProcessRequest = function(){
+    this[this.token](null,{inprocess_request:'call_api'});
+  };
+
+  TelegramBotService.prototype.cronJob = function(){
+    this.clearCache();
+    this.makeInProcessRequest();
+    this.doCronJob();
+  };
+
+  //move cron job functionallity to lib
+  TelegramBotService.prototype.doCronJob = function(){
+    setTimeout(this.cronJob.bind(this),this.job_interval);
   };
 
   TelegramBotService.prototype.isInitiallyReady = function () {
@@ -77,6 +109,10 @@ function createTelegramBotService(execlib, ParentService) {
   function onModuleHandler (token, respondermodule) {
     var responderClass = respondermodule(TelegramResponder);
     var ret = function (url, req, res) {
+      if (!url || !res){ //InProcess request
+        TelegramResponder.inProcessFactory(req, responderClass, this.cache);
+        return;
+      }
       if (!responderClass) {
         //throw lib.Error(...);
         res.end('{}');

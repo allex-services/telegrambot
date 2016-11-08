@@ -7,6 +7,7 @@ function createTelegramResponder (execlib) {
   var InlineQuery = MessageTypes.InlineQuery;
   var ChosenInlineResult = MessageTypes.ChosenInlineResult;
   var CallbackQuery = MessageTypes.CallbackQuery;
+  var InProcessRequest = MessageTypes.InProcessRequest;
 
   function TelegramResponder (res, jsonreq) {
     this.res = res;
@@ -30,6 +31,9 @@ function createTelegramResponder (execlib) {
     if (!!jsonreq.callback_query){
       return new CallbackQuery(jsonreq);
     }
+    if (!!jsonreq.inprocess_request){
+      return new InProcessRequest(jsonreq);
+    }
     //TODO edited_message
     return jsonreq;
   };
@@ -45,18 +49,30 @@ function createTelegramResponder (execlib) {
   };
 
   TelegramResponder.factory = function (res, responderClass, cache, req) {
-    var jsonreq, responderClass;
+    var jsonreq;
     try {
       jsonreq = JSON.parse(req);
       if (!responderClass){
         new TelegramResponder(res, jsonreq);
       }else{
-        //responderClass = require('./' + responderClassName + 'respondercreator.js')(TelegramResponder, execlib);
         new responderClass(res, jsonreq, cache);
       }
     } catch(e) {
       console.error(e);
-      res.end('');
+      res.end('{}');
+    }
+  };
+
+  TelegramResponder.inProcessFactory = function (jsonreq, responderClass, cache) {
+    try {
+      if (!responderClass){
+        new TelegramResponder(null, jsonreq);
+      }else{
+        new responderClass(null, jsonreq, cache);
+      }
+    } catch(e) {
+      console.error(e);
+      res.end('{}');
     }
   };
 
