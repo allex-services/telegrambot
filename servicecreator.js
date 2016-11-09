@@ -109,7 +109,7 @@ function createTelegramBotService(execlib, ParentService) {
   function onModuleHandler (token, respondermodule) {
     var responderClass = respondermodule(TelegramResponder);
     var ret = function (url, req, res) {
-      if (!url || !res){ //InProcess request
+      if (!!req.inprocess_request){ //InProcess request
         TelegramResponder.inProcessFactory(req, responderClass, this.cache);
         return;
       }

@@ -34,6 +34,7 @@ function createTelegramResponder (execlib) {
     if (!!jsonreq.inprocess_request){
       return new InProcessRequest(jsonreq);
     }
+    console.log('??! AKO NIJE NISTA OD OVOGA?',jsonreq);
     //TODO edited_message
     return jsonreq;
   };
