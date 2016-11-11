@@ -18,9 +18,8 @@ function createTelegramBotService(execlib, ParentService) {
     this.cache = new lib.Map();
     this.cache_time = prophash.cache_time ||  15 * 60 * 1000;
     this.job_interval = prophash.job_interval || 15 * 1000;
-    this.invalidateCount = 0; //to lib
-    this.aged = []; //to lib
-    this.maxAge = 4*60*2; //2 hours, to lib
+    //this.aged = []; //to lib
+    //this.maxAge = 4*60*2; //2 hours, to lib
     this.doCronJob(); //to lib
     this.createListenerMethod(prophash.token, prophash.modulehandler).then(
       this.readyToAcceptUsersDefer.resolve.bind(this.readyToAcceptUsersDefer, true)
@@ -30,8 +29,7 @@ function createTelegramBotService(execlib, ParentService) {
   ParentService.inherit(TelegramBotService, factoryCreator);
   
   TelegramBotService.prototype.__cleanUp = function() {
-    this.aged = null;
-    this.invalidateCount = null;
+    //this.aged = null;
     this.job_interval = null;
     this.cache_time = null;
     if (!!this.cache){
@@ -42,6 +40,7 @@ function createTelegramBotService(execlib, ParentService) {
     ParentService.prototype.__cleanUp.call(this);
   };
 
+  /*
   TelegramBotService.prototype.doAging = function(item,name){
     if (!lib.isDefinedAndNotNull(item.age)) item = 0;
     item.age++;
@@ -49,6 +48,7 @@ function createTelegramBotService(execlib, ParentService) {
       this.aged.push(name);
     }
   };
+  */
 
   TelegramBotService.prototype.invalidateCacheEntry = function(item,name,map){
     var ret;
@@ -57,7 +57,7 @@ function createTelegramBotService(execlib, ParentService) {
     if (name.indexOf('PERSISTENT') === 0){
       return;
     }
-    this.doAging(item,name);
+    //this.doAging(item,name);
     if (!results || !timestamp){
       return false;
     }
@@ -69,24 +69,26 @@ function createTelegramBotService(execlib, ParentService) {
     return false;
   };
 
+  /*
   TelegramBotService.prototype.removeFromCache = function(entryName){
     var ret = this.cache.remove(entryName);
-    console.log('IZBRISAO IZ CACHE!');
+    console.log('IZBRISAO IZ CACHE!',entryName);
   };
+  */
 
   TelegramBotService.prototype.clearCache = function(){
     this.cache.traverse(this.invalidateCacheEntry.bind(this));
-    this.aged.forEach(this.removeFromCache.bind(this));
-    this.aged = [];
+    //this.aged.forEach(this.removeFromCache.bind(this));
+    //this.aged = [];
   };
 
-  TelegramBotService.prototype.makeInProcessRequest = function(){
+  TelegramBotService.prototype.makeInProcessCacheRequest = function(){
     this[this.token](null,{inprocess_request:'call_api'});
   };
 
   TelegramBotService.prototype.cronJob = function(){
     this.clearCache();
-    this.makeInProcessRequest();
+    this.makeInProcessCacheRequest();
     this.doCronJob();
   };
 
