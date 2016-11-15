@@ -87,7 +87,7 @@ function createTelegramBotService(execlib, ParentService) {
   };
 
   TelegramBotService.prototype.cronJob = function(){
-    this.clearCache();
+    //this.clearCache(); currently no need to clear anything, everything is static in cache
     this.makeInProcessCacheRequest();
     this.doCronJob();
   };
