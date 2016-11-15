@@ -9,6 +9,8 @@ function createMessageTypes(execlib){
     ChosenInlineResult: require('./choseninlineresult.js')(execlib),
     InlineKeyboardButton: require('./inlinekeyboardbutton.js')(execlib),
     InlineKeyboardMarkup : require('./inlinekeyboardmarkup.js')(execlib),
+    KeyboardButton: require('./keyboardbutton.js')(execlib),
+    ReplyKeyboardMarkup : require('./replykeyboardmarkup.js')(execlib),
     InProcessRequest: require('./inprocessrequest.js')(execlib)
   };
 }
