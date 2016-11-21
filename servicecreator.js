@@ -18,8 +18,8 @@ function createTelegramBotService(execlib, ParentService) {
     this.cache = new lib.Map();
     this.cache_time = prophash.cache_time ||  15 * 60 * 1000;
     this.job_interval = prophash.job_interval || 15 * 1000;
-    //this.aged = []; //to lib
-    //this.maxAge = 4*60*2; //2 hours, to lib
+    this.aged = []; //to lib
+    this.maxAge = 4*60*2; //2 hours, to lib
     this.doCronJob(); //to lib
     this.createListenerMethod(prophash.token, prophash.modulehandler).then(
       this.readyToAcceptUsersDefer.resolve.bind(this.readyToAcceptUsersDefer, true)
@@ -40,46 +40,43 @@ function createTelegramBotService(execlib, ParentService) {
     ParentService.prototype.__cleanUp.call(this);
   };
 
-  /*
   TelegramBotService.prototype.doAging = function(item,name){
-    if (!lib.isDefinedAndNotNull(item.age)) item = 0;
+    if (!lib.isDefinedAndNotNull(item.age)) item.age = 0;
     item.age++;
     if (item.age >= this.maxAge){
       this.aged.push(name);
     }
   };
-  */
 
   TelegramBotService.prototype.invalidateCacheEntry = function(item,name,map){
     var ret;
-    var results = item.results;
+    var content = item.content;
     var timestamp = item.timestamp;
-    if (name.indexOf('PERSISTENT') === 0){
+    if (name.indexOf('REMOVABLE') !== 0){
       return;
     }
-    //this.doAging(item,name);
-    if (!results || !timestamp){
+    if (!content || !timestamp){
       return false;
     }
+    this.doAging(item,name);
     if (Date.now() - timestamp > this.cache_time){
-      item.results = null;
-      item.timestamp = null;
+      if (lib.isFunction(item.destroy)){
+        item.destroy();
+      }
+      item.content = null;
       return true;
     }
     return false;
   };
 
-  /*
   TelegramBotService.prototype.removeFromCache = function(entryName){
     var ret = this.cache.remove(entryName);
-    console.log('IZBRISAO IZ CACHE!',entryName);
   };
-  */
 
   TelegramBotService.prototype.clearCache = function(){
     this.cache.traverse(this.invalidateCacheEntry.bind(this));
-    //this.aged.forEach(this.removeFromCache.bind(this));
-    //this.aged = [];
+    this.aged.forEach(this.removeFromCache.bind(this));
+    this.aged = [];
   };
 
   TelegramBotService.prototype.makeInProcessCacheRequest = function(){
@@ -87,7 +84,7 @@ function createTelegramBotService(execlib, ParentService) {
   };
 
   TelegramBotService.prototype.cronJob = function(){
-    //this.clearCache(); currently no need to clear anything, everything is static in cache
+    this.clearCache();
     this.makeInProcessCacheRequest();
     this.doCronJob();
   };
