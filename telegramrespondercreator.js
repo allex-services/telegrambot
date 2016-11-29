@@ -9,7 +9,8 @@ function createTelegramResponder (execlib) {
   var CallbackQuery = MessageTypes.CallbackQuery;
   var InProcessRequest = MessageTypes.InProcessRequest;
 
-  function TelegramResponder (res, jsonreq) {
+  function TelegramResponder (res, jsonreq, token) {
+    this.token = token;
     this.res = res;
     this.incomingRequest = this.createRequest(jsonreq);
     this.process();
@@ -45,18 +46,37 @@ function createTelegramResponder (execlib) {
     this.destroy();
   };
 
+  TelegramResponder.prototype.onNotificationSent = function(){
+    console.log('Successfully sent NOTIFICATION');
+    this.destroy();
+  };
+
+  TelegramResponder.prototype.onNotificationFailed = function(){
+    console.log('Error on NOTIFICATION sending');
+    this.destroy();
+  };
+
+  TelegramResponder.prototype.sendNotification = function (methodName, params) {
+    lib.request('https://api.telegram.org/bot' + this.token + '/' + methodName,{ 
+      parameters: params,
+      method: 'POST', 
+      onComplete: this.onNotificationSent.bind(this),
+      onError: this.onNotificationFailed.bind(this) 
+    });
+  };
+
   //to override
   TelegramResponder.prototype.process = function () {
   };
 
-  TelegramResponder.factory = function (res, responderClass, cache, req) {
+  TelegramResponder.factory = function (res, responderClass, cache, subscribers, token, req) {
     var jsonreq;
     try {
       jsonreq = JSON.parse(req);
       if (!responderClass){
         new TelegramResponder(res, jsonreq);
       }else{
-        new responderClass(res, jsonreq, cache);
+        new responderClass(res, jsonreq, cache, subscribers, token);
       }
     } catch(e) {
       console.error(e);
@@ -64,12 +84,12 @@ function createTelegramResponder (execlib) {
     }
   };
 
-  TelegramResponder.inProcessFactory = function (jsonreq, responderClass, cache) {
+  TelegramResponder.inProcessFactory = function (jsonreq, responderClass, cache, subscribers, token) {
     try {
       if (!responderClass){
         new TelegramResponder(null, jsonreq);
       }else{
-        new responderClass(null, jsonreq, cache);
+        new responderClass(null, jsonreq, cache, subscribers, token);
       }
     } catch(e) {
       console.error(e);

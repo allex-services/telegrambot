@@ -3,7 +3,8 @@ function createTelegramBotService(execlib, ParentService) {
   
   var lib = execlib.lib,
     q = lib.q,
-    TelegramResponder = require('./telegramrespondercreator')(execlib);
+    TelegramResponder = require('./telegramrespondercreator')(execlib),
+    notifyInterval = 50;
 
   function factoryCreator(parentFactory) {
     return {
@@ -20,8 +21,13 @@ function createTelegramBotService(execlib, ParentService) {
     this.job_interval = prophash.job_interval || 15 * 1000;
     this.aged = []; //to lib
     this.maxAge = 4*60*2; //2 hours, to lib
+    this.notified = {
+      google : {ind : false, milestone: 10}, 
+      twitter : {ind : false, milestone: 15}, 
+      youtube : {ind : false, milestone: 21} 
+    };
     this.doCronJob(); //to lib
-    this.createListenerMethod(prophash.token, prophash.modulehandler).then(
+    this.createListenerMethod(prophash.token, prophash.modulehandler, prophash.subscribehandler).then(
       this.readyToAcceptUsersDefer.resolve.bind(this.readyToAcceptUsersDefer, true)
     );
   }
@@ -29,7 +35,12 @@ function createTelegramBotService(execlib, ParentService) {
   ParentService.inherit(TelegramBotService, factoryCreator);
   
   TelegramBotService.prototype.__cleanUp = function() {
-    //this.aged = null;
+    this.notified = null;
+    if (!!this.subscribeMechanics){
+      this.subscribeMechanics.destroy();
+    }
+    this.subscribeMechanics = null;
+    this.aged = null;
     this.job_interval = null;
     this.cache_time = null;
     if (!!this.cache){
@@ -79,13 +90,66 @@ function createTelegramBotService(execlib, ParentService) {
     this.aged = [];
   };
 
-  TelegramBotService.prototype.makeInProcessCacheRequest = function(){
+  TelegramBotService.prototype.makeAPICall = function(){
     this[this.token](null,{inprocess_request:'call_api'});
   };
 
+  function checkTime(delta,milestone){
+    var now = new Date();
+    var nowMillis = now.getTime();
+    if ((now.getHours() < milestone) && (new Date(nowMillis + delta).getHours() >= milestone)){
+      //1 period behind milestone
+      return -1;
+    }
+    if ((new Date(nowMillis - delta).getHours() < milestone) && (now.getHours() >= milestone)){
+      //1 period after milestone
+      return 1;
+    }
+    //0, invalid
+    return 0;
+  }
+
+  TelegramBotService.prototype.notificationJob = function(inprocess_request,subscribers,index){
+    var subscriber = subscribers[index];
+    this[this.token](null, {
+      inprocess_request : inprocess_request,
+      data : subscriber 
+    });
+    this.notify(inprocess_request,index+1,subscribers);
+  };
+
+  TelegramBotService.prototype.notify = function(inprocess_request,index,subscribers){
+    if (!subscribers || !subscribers.length) return;
+    if (!subscribers[index]){
+      //resolve if some notification on end/error needed
+      return;
+    }
+    setTimeout(this.notificationJob.bind(this,inprocess_request,subscribers,index),notifyInterval);
+  };
+
+  TelegramBotService.prototype.doNotify = function(){
+    if (checkTime(this.job_interval,this.notified.google.milestone) === 1){
+      this.subscribeMechanics.getOldest(1000).then(
+        this.notify.bind(this,'notify_google',0)
+      );
+    }
+    if (checkTime(this.job_interval,this.notified.twitter.milestone) === 1){
+      this.subscribeMechanics.getOldest(1000).then(
+        this.notify.bind(this,'notify_twitter',0)
+      );
+    }
+    if (checkTime(this.job_interval,this.notified.youtube.milestone) === 1){
+      this.subscribeMechanics.getOldest(1000).then(
+        this.notify.bind(this,'notify_youtube',0)
+      );
+    }
+  }
+
   TelegramBotService.prototype.cronJob = function(){
+    //TODO get subscribers from storage, filter them and notify
+    this.doNotify();
     this.clearCache();
-    this.makeInProcessCacheRequest();
+    this.makeAPICall();
     this.doCronJob();
   };
 
@@ -105,11 +169,12 @@ function createTelegramBotService(execlib, ParentService) {
     err = null;
   }
 
-  function onModuleHandler (token, respondermodule) {
+  function onModuleHandler (token, respondermodule, subscribemodule) {
+    this.subscribeMechanics = new subscribemodule.Mechanics('subscribers.db'); 
     var responderClass = respondermodule(TelegramResponder);
     var ret = function (url, req, res) {
       if (!!req.inprocess_request){ //InProcess request
-        TelegramResponder.inProcessFactory(req, responderClass, this.cache);
+        TelegramResponder.inProcessFactory(req, responderClass, this.cache, this.subscribeMechanics, token);
         return;
       }
       if (!responderClass) {
@@ -118,7 +183,7 @@ function createTelegramBotService(execlib, ParentService) {
         return;
       }
       this.extractRequestParams(url, req).then(
-        TelegramResponder.factory.bind(null, res, responderClass, this.cache)
+        TelegramResponder.factory.bind(null, res, responderClass, this.cache, this.subscribeMechanics, token)
       ).catch(
         catchHelper.bind(null,res) 
       );
@@ -130,8 +195,8 @@ function createTelegramBotService(execlib, ParentService) {
     return q(true);
   }
 
-  TelegramBotService.prototype.createListenerMethod = function (token, modulehandlername) {
-    return execlib.loadDependencies('client', [modulehandlername], onModuleHandler.bind(null, token));
+  TelegramBotService.prototype.createListenerMethod = function (token, modulehandlername, subscribehandlername) {
+    return execlib.loadDependencies('client', [modulehandlername,subscribehandlername], onModuleHandler.bind(this, token));
   };
 
   /*

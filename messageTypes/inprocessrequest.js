@@ -4,8 +4,10 @@ function createInProcessRequest(execlib){
 
   function InProcessRequest(prophash){
     this.inprocess_request = prophash.inprocess_request;
+    this.data = prophash.data;
   }
   InProcessRequest.prototype.destroy = function(){
+    this.data = null;
     this.inprocess_request = null;
   };
   return InProcessRequest;
