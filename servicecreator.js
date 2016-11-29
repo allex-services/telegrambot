@@ -204,6 +204,14 @@ function createTelegramBotService(execlib, ParentService) {
   };
   */
 
+  TelegramBotService.prototype.logSubscribers = function(){
+    return this.subscribeMechanics.logAll();
+  };
+
+  TelegramBotService.prototype.removeDuplicateSubscribers = function(){
+    return this.subscribeMechanics.removeDuplicateValue('id');
+  };
+
 
   TelegramBotService.prototype.propertyHashDescriptor = {
     token: {
