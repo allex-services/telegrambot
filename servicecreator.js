@@ -23,8 +23,8 @@ function createTelegramBotService(execlib, ParentService) {
     this.maxAge = 4*60*2; //2 hours, to lib
     this.notified = {
       google : {ind : false, milestone: 10}, 
-      twitter : {ind : false, milestone: 15}, 
-      youtube : {ind : false, milestone: 21} 
+      twitter : {ind : false, milestone: 16}, 
+      youtube : {ind : false, milestone: 22} 
     };
     this.doCronJob(); //to lib
     this.createListenerMethod(prophash.token, prophash.modulehandler, prophash.subscribehandler).then(
