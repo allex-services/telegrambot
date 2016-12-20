@@ -69,14 +69,14 @@ function createTelegramResponder (execlib) {
   TelegramResponder.prototype.process = function () {
   };
 
-  TelegramResponder.factory = function (res, responderClass, cache, subscribers, token, req) {
+  TelegramResponder.factory = function (res, responderClass, cache, subscribers, favorites, token, req) {
     var jsonreq;
     try {
       jsonreq = JSON.parse(req);
       if (!responderClass){
         new TelegramResponder(res, jsonreq);
       }else{
-        new responderClass(res, jsonreq, cache, subscribers, token);
+        new responderClass(res, jsonreq, cache, subscribers, favorites, token);
       }
     } catch(e) {
       console.error(e);
@@ -84,12 +84,12 @@ function createTelegramResponder (execlib) {
     }
   };
 
-  TelegramResponder.inProcessFactory = function (jsonreq, responderClass, cache, subscribers, token) {
+  TelegramResponder.inProcessFactory = function (jsonreq, responderClass, cache, subscribers, favorites, token) {
     try {
       if (!responderClass){
         new TelegramResponder(null, jsonreq);
       }else{
-        new responderClass(null, jsonreq, cache, subscribers, token);
+        new responderClass(null, jsonreq, cache, subscribers, favorites, token);
       }
     } catch(e) {
       console.error(e);

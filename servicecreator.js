@@ -21,13 +21,14 @@ function createTelegramBotService(execlib, ParentService) {
     this.job_interval = prophash.job_interval || 15 * 1000;
     this.aged = []; //to lib
     this.maxAge = 4*60*2; //2 hours, to lib
+    this.articlePostingSchedule = [1,3,5,7,9,11,13,15,17,19,21,23];
     this.notified = {
       google : {ind : false, milestone: 10}, 
-      twitter : {ind : false, milestone: 16}, 
-      youtube : {ind : false, milestone: 22} 
+      twitter : {ind : false, milestone: 15}, 
+      youtube : {ind : false, milestone: 21} 
     };
     this.doCronJob(); //to lib
-    this.createListenerMethod(prophash.token, prophash.modulehandler, prophash.subscribehandler).then(
+    this.createListenerMethod(prophash.token, prophash.modulehandler, prophash.subscribehandler, prophash.favoriteshandler).then(
       this.readyToAcceptUsersDefer.resolve.bind(this.readyToAcceptUsersDefer, true)
     );
   }
@@ -35,6 +36,7 @@ function createTelegramBotService(execlib, ParentService) {
   ParentService.inherit(TelegramBotService, factoryCreator);
   
   TelegramBotService.prototype.__cleanUp = function() {
+    this.articlePostingSchedule = null;
     this.notified = null;
     if (!!this.subscribeMechanics){
       this.subscribeMechanics.destroy();
@@ -127,6 +129,18 @@ function createTelegramBotService(execlib, ParentService) {
     setTimeout(this.notificationJob.bind(this,inprocess_request,subscribers,index),notifyInterval);
   };
 
+  TelegramBotService.prototype.checkSocialTime = function(type,postTime){
+    if (checkTime(this.job_interval,postTime) === 1){
+      this[this.token](null, {
+        inprocess_request : 'post_to_social_'+type,
+      });
+    }
+  };
+
+  TelegramBotService.prototype.doPostToSocialNetworks = function(){
+    this.articlePostingSchedule.forEach(this.checkSocialTime.bind(this,'article'));
+  };
+
   TelegramBotService.prototype.doNotify = function(){
     if (checkTime(this.job_interval,this.notified.google.milestone) === 1){
       this.subscribeMechanics.getOldest(1000).then(
@@ -143,10 +157,11 @@ function createTelegramBotService(execlib, ParentService) {
         this.notify.bind(this,'notify_youtube',0)
       );
     }
-  }
+  };
 
   TelegramBotService.prototype.cronJob = function(){
     //TODO get subscribers from storage, filter them and notify
+    this.doPostToSocialNetworks();
     this.doNotify();
     this.clearCache();
     this.makeAPICall();
@@ -169,12 +184,13 @@ function createTelegramBotService(execlib, ParentService) {
     err = null;
   }
 
-  function onModuleHandler (token, respondermodule, subscribemodule) {
+  function onModuleHandler (token, respondermodule, subscribemodule, favoritesmodule) {
     this.subscribeMechanics = new subscribemodule.Mechanics('subscribers.db'); 
+    this.favoritesMechanics = new favoritesmodule.Mechanics('favorites.db'); 
     var responderClass = respondermodule(TelegramResponder);
     var ret = function (url, req, res) {
       if (!!req.inprocess_request){ //InProcess request
-        TelegramResponder.inProcessFactory(req, responderClass, this.cache, this.subscribeMechanics, token);
+        TelegramResponder.inProcessFactory(req, responderClass, this.cache, this.subscribeMechanics, this.favoritesMechanics, token);
         return;
       }
       if (!responderClass) {
@@ -183,7 +199,7 @@ function createTelegramBotService(execlib, ParentService) {
         return;
       }
       this.extractRequestParams(url, req).then(
-        TelegramResponder.factory.bind(null, res, responderClass, this.cache, this.subscribeMechanics, token)
+        TelegramResponder.factory.bind(null, res, responderClass, this.cache, this.subscribeMechanics, this.favoritesMechanics, token)
       ).catch(
         catchHelper.bind(null,res) 
       );
@@ -195,8 +211,8 @@ function createTelegramBotService(execlib, ParentService) {
     return q(true);
   }
 
-  TelegramBotService.prototype.createListenerMethod = function (token, modulehandlername, subscribehandlername) {
-    return execlib.loadDependencies('client', [modulehandlername,subscribehandlername], onModuleHandler.bind(this, token));
+  TelegramBotService.prototype.createListenerMethod = function (token, modulehandlername, subscribehandlername, favoriteshandlername) {
+    return execlib.loadDependencies('client', [modulehandlername,subscribehandlername,favoriteshandlername], onModuleHandler.bind(this, token));
   };
 
   /*
