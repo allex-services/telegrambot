@@ -143,17 +143,17 @@ function createTelegramBotService(execlib, ParentService) {
 
   TelegramBotService.prototype.doNotify = function(){
     if (checkTime(this.job_interval,this.notified.google.milestone) === 1){
-      this.subscribeMechanics.getOldest(1000).then(
+      this.subscribeMechanics.getOldest(10000).then(
         this.notify.bind(this,'notify_google',0)
       );
     }
     if (checkTime(this.job_interval,this.notified.twitter.milestone) === 1){
-      this.subscribeMechanics.getOldest(1000).then(
+      this.subscribeMechanics.getOldest(10000).then(
         this.notify.bind(this,'notify_twitter',0)
       );
     }
     if (checkTime(this.job_interval,this.notified.youtube.milestone) === 1){
-      this.subscribeMechanics.getOldest(1000).then(
+      this.subscribeMechanics.getOldest(10000).then(
         this.notify.bind(this,'notify_youtube',0)
       );
     }
@@ -222,6 +222,10 @@ function createTelegramBotService(execlib, ParentService) {
 
   TelegramBotService.prototype.logSubscribers = function(){
     return this.subscribeMechanics.logAll();
+  };
+
+  TelegramBotService.prototype.logCnt = function(){
+    return this.subscribeMechanics.logTotalCount();
   };
 
   TelegramBotService.prototype.removeDuplicateSubscribers = function(){

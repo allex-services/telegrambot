@@ -22,6 +22,10 @@ function createUser(execlib, ParentUser) {
     qlib.promise2defer(this.__service.logSubscribers(), defer);
   };
 
+  User.prototype.logCnt= function(defer){
+    qlib.promise2defer(this.__service.logCnt(), defer);
+  };
+
   User.prototype.removeDuplicateSubscribers = function(defer){
     qlib.promise2defer(this.__service.removeDuplicateSubscribers(), defer);
   };
