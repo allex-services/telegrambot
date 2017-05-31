@@ -93,10 +93,13 @@ function createTelegramBotService(execlib, ParentService) {
   };
 
   TelegramBotService.prototype.makeAPICall = function(){
+    if (!lib.isFunction(this[this.token])) return;
     this[this.token](null,{inprocess_request:'call_api'});
   };
 
-  function checkTime(delta,milestone){
+  TelegramBotService.prototype.checkTime = function(delta,milestone){
+    var errorFactorRate = 500; //500ms
+    delta += errorFactorRate;
     var now = new Date();
     var nowMillis = now.getTime();
     if ((now.getHours() < milestone) && (new Date(nowMillis + delta).getHours() >= milestone)){
@@ -130,7 +133,7 @@ function createTelegramBotService(execlib, ParentService) {
   };
 
   TelegramBotService.prototype.checkSocialTime = function(type,postTime){
-    if (checkTime(this.job_interval,postTime) === 1){
+    if (this.checkTime(this.job_interval,postTime) === 1){
       this[this.token](null, {
         inprocess_request : 'post_to_social_'+type,
       });
@@ -142,17 +145,17 @@ function createTelegramBotService(execlib, ParentService) {
   };
 
   TelegramBotService.prototype.doNotify = function(){
-    if (checkTime(this.job_interval,this.notified.google.milestone) === 1){
+    if (this.checkTime(this.job_interval,this.notified.google.milestone) === 1){
       this.subscribeMechanics.getOldest(10000).then(
         this.notify.bind(this,'notify_google',0)
       );
     }
-    if (checkTime(this.job_interval,this.notified.twitter.milestone) === 1){
+    if (this.checkTime(this.job_interval,this.notified.twitter.milestone) === 1){
       this.subscribeMechanics.getOldest(10000).then(
         this.notify.bind(this,'notify_twitter',0)
       );
     }
-    if (checkTime(this.job_interval,this.notified.youtube.milestone) === 1){
+    if (this.checkTime(this.job_interval,this.notified.youtube.milestone) === 1){
       this.subscribeMechanics.getOldest(10000).then(
         this.notify.bind(this,'notify_youtube',0)
       );
