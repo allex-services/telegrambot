@@ -3,8 +3,7 @@ function createTelegramBotService(execlib, ParentService) {
   
   var lib = execlib.lib,
     q = lib.q,
-    TelegramResponder = require('./telegramrespondercreator')(execlib),
-    notifyInterval = 50;
+    TelegramResponder = require('./telegramrespondercreator')(execlib);
 
   function factoryCreator(parentFactory) {
     return {
@@ -27,6 +26,7 @@ function createTelegramBotService(execlib, ParentService) {
       twitter : {ind : false, milestone: 15}, 
       youtube : {ind : false, milestone: 21} 
     };
+    this.notifyInterval = 50;
     this.doCronJob(); //to lib
     this.createListenerMethod(prophash.token, prophash.modulehandler, prophash.subscribehandler, prophash.favoriteshandler).then(
       this.readyToAcceptUsersDefer.resolve.bind(this.readyToAcceptUsersDefer, true)
@@ -37,6 +37,7 @@ function createTelegramBotService(execlib, ParentService) {
   
   TelegramBotService.prototype.__cleanUp = function() {
     this.articlePostingSchedule = null;
+    this.notifyInterval = null;
     this.notified = null;
     if (!!this.subscribeMechanics){
       this.subscribeMechanics.destroy();
@@ -129,7 +130,7 @@ function createTelegramBotService(execlib, ParentService) {
       //resolve if some notification on end/error needed
       return;
     }
-    setTimeout(this.notificationJob.bind(this,inprocess_request,subscribers,index),notifyInterval);
+    setTimeout(this.notificationJob.bind(this,inprocess_request,subscribers,index),this.notifyInterval);
   };
 
   TelegramBotService.prototype.checkSocialTime = function(type,postTime){
