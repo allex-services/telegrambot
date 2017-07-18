@@ -14,6 +14,7 @@ function createTelegramBotService(execlib, ParentService) {
 
   function TelegramBotService(prophash) {
     ParentService.call(this, prophash);
+    this.allowAnonymous = true;
     this.token = prophash.token;
     this.cache = new lib.Map();
     this.cache_time = prophash.cache_time ||  15 * 60 * 1000;
@@ -51,6 +52,7 @@ function createTelegramBotService(execlib, ParentService) {
     }
     this.cache = null;
     this.token = null;
+    this.allowAnonymous = null;
     ParentService.prototype.__cleanUp.call(this);
   };
 
@@ -212,6 +214,12 @@ function createTelegramBotService(execlib, ParentService) {
       responderClass = null;
     };
     TelegramBotService.prototype[token] = ret;
+    if (!lib.isArray(TelegramBotService.prototype.anonymousMethods)) {
+      TelegramBotService.prototype.anonymousMethods = [token];
+    } else {
+      TelegramBotService.prototype.anonymousMethods.push(token);
+    }
+
     return q(true);
   }
 
